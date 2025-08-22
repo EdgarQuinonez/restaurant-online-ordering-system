@@ -1,0 +1,18 @@
+services:
+  frontend-build:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/build.Dockerfile
+    ports:
+      - "8080:8080"
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/dev.Dockerfile
+    ports:
+      - "4200:4200"
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
