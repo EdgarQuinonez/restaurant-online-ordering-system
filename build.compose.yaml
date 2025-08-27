@@ -16,11 +16,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file: "./backend/.env"
-  django-web-build:
+  backend-build:
     build:
       context: ./backend
       dockerfile: ../docker/backend/build.Dockerfile
-    container_name: backend-build
     ports:
       - "8000:8000"
     depends_on:
