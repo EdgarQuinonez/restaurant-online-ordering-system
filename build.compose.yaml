@@ -1,15 +1,10 @@
 services:
-  frontend-dev:
+  frontend-build:
     build:
       context: ./frontend
-      dockerfile: ../docker/frontend/dev.Dockerfile
+      dockerfile: ../docker/frontend/build.Dockerfile
     ports:
-      - "4200:4200"
-    develop:
-      watch:
-        - action: sync
-          path: ./frontend
-          target: /app
+      - "8080:8080"
   db:
     image: postgres:17
     environment:
@@ -21,11 +16,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file: "./backend/.env"
-  django-web-dev:
+  django-web-build:
     build:
       context: ./backend
-      dockerfile: ../docker/backend/dev.Dockerfile
-    container_name: backend-dev
+      dockerfile: ../docker/backend/build.Dockerfile
+    container_name: backend-build
     ports:
       - "8000:8000"
     depends_on:
@@ -42,6 +37,5 @@ services:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
     env_file: "./backend/.env"
-
 volumes:
   postgres_data:
