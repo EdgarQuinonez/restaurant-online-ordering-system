@@ -2,6 +2,9 @@
 
 # Dependencies
 
+- primeng
+- tailwind
+
 # Usage
 
 ## Snippets
