@@ -1,0 +1,100 @@
+{
+  "menuItems": [
+    {
+      "id": 1,
+      "name": "Classic Eggs Benedict",
+      "description": "Poached eggs on English muffins with Canadian bacon and hollandaise sauce.",
+      "price": 14.99,
+      "category": "Breakfast Classics",
+      "type": "food"
+    },
+    {
+      "id": 2,
+      "name": "Belgian Waffle",
+      "description": "Fluffy Belgian waffle topped with fresh berries and maple syrup.",
+      "price": 11.5,
+      "category": "Sweet Breakfast",
+      "type": "food"
+    },
+    {
+      "id": 3,
+      "name": "Avocado Toast",
+      "description": "Sourdough toast topped with smashed avocado, cherry tomatoes, and microgreens.",
+      "price": 12.25,
+      "category": "Modern Favorites",
+      "type": "food"
+    },
+    {
+      "id": 4,
+      "name": "Breakfast Burrito",
+      "description": "Scrambled eggs, black beans, chorizo, and cheese wrapped in a flour tortilla.",
+      "price": 13.75,
+      "category": "Savory Plates",
+      "type": "food"
+    },
+    {
+      "id": 5,
+      "name": "Greek Yogurt Parfait",
+      "description": "Layers of Greek yogurt, granola, and seasonal fruits.",
+      "price": 9.99,
+      "category": "Healthy Options",
+      "type": "food"
+    },
+    {
+      "id": 6,
+      "name": "Cappuccino",
+      "description": "Perfectly balanced espresso with steamed milk and a layer of foam.",
+      "price": 4.5,
+      "category": "Espresso Classics",
+      "type": "beverage"
+    },
+    {
+      "id": 7,
+      "name": "Iced Vanilla Latte",
+      "description": "Espresso chilled with milk and a hint of vanilla syrup over ice.",
+      "price": 5.75,
+      "category": "Iced Coffee",
+      "type": "beverage"
+    },
+    {
+      "id": 8,
+      "name": "Fresh Orange Juice",
+      "description": "Freshly squeezed orange juice, served chilled.",
+      "price": 5.25,
+      "category": "Fresh Juices",
+      "type": "beverage"
+    },
+    {
+      "id": 9,
+      "name": "Matcha Green Tea Latte",
+      "description": "Ceremonial grade matcha whisked with steamed milk.",
+      "price": 5.95,
+      "category": "Tea Specialties",
+      "type": "beverage"
+    },
+    {
+      "id": 10,
+      "name": "Hot Chocolate",
+      "description": "Rich, creamy hot chocolate topped with whipped cream.",
+      "price": 4.95,
+      "category": "Warm Drinks",
+      "type": "beverage"
+    },
+    {
+      "id": 11,
+      "name": "Breakfast Panini",
+      "description": "Pressed sandwich with egg, bacon, cheddar, and spinach on ciabatta.",
+      "price": 12.99,
+      "category": "Sandwiches",
+      "type": "food"
+    },
+    {
+      "id": 12,
+      "name": "Cold Brew",
+      "description": "Smooth cold brew coffee steeped for 18 hours, served black or with cream.",
+      "price": 5.25,
+      "category": "Iced Coffee",
+      "type": "beverage"
+    }
+  ]
+}
