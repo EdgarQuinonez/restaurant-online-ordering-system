@@ -8,7 +8,9 @@
 
 ### Start development environment
 
-docker compose --env-file ./backend/.env up
+docker compose --env-file ./backend/.env up --build --watch
+
+This automatically syncs changes made in frontend project.
 
 ## Environment
 
