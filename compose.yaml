@@ -41,6 +41,5 @@ services:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
     env_file: "./backend/.env"
-
 volumes:
   postgres_data:

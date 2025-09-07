@@ -47,6 +47,11 @@ USER appuser
  
 # Expose the application port
 EXPOSE 8000 
- 
+
+# Run migrations
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
 # Start the application using Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "django_project.wsgi:application"]
