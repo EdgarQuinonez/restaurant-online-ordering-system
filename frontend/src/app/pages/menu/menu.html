@@ -1,1 +1,21 @@
-<p>menu works!</p>
+<div>
+  <h1>Café Parralito Menú</h1>
+  <div>
+    <button
+      class="p-4 flex flex-col items-center justify-center"
+      (click)="toggleType('food')"
+    >
+      <i-lucide [img]="HamburgerIcon"></i-lucide>
+      <span class="font-bold mt-6"> Comida </span>
+      <div class="h-1 w-full bg-accent mt-3"></div>
+    </button>
+    <button
+      class="p-4 flex flex-col items-center justify-center"
+      (click)="toggleType('beverage')"
+    >
+      <i-lucide [img]="CoffeeIcon"></i-lucide>
+      <span class="font-bold mt-6"> Bebidas </span>
+      <div class="h-1 w-full bg-accent mt-3"></div>
+    </button>
+  </div>
+</div>

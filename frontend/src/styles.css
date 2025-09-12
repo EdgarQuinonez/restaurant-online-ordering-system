@@ -1,3 +1,39 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 @plugin "tailwindcss-primeui";
+
+@theme {
+  --color-surface-0: #fff;
+  --color-surface-50: #fefdfb;
+  --color-surface-100: #fcfaf8;
+  --color-surface-200: #f2e6da;
+  --color-surface-700: #2f2e2d;
+  --color-surface-800: rgba(24, 23, 22, 1);
+  --color-surface-850: #11100f;
+  --color-surface-800op15: rgba(24, 23, 22, 0.15);
+  --color-surface-800op80: rgba(24, 23, 22, 0.8);
+  --color-surface-800op90: rgba(24, 23, 22, 0.9);
+
+  --color-primary: #f4473a;
+  /* --color-secondary: #9E3232; */
+  --color-secondary: #931c25;
+  --color-secondary-200: #a84747;
+  --color-accent: #f8ce8f;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  span,
+  div,
+  a,
+  ul,
+  li,
+  ol {
+    @apply text-surface-700;
+  }
+  h1 {
+    @apply text-2xl font-bold text-center;
+  }
+}

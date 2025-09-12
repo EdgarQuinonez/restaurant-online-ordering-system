@@ -9,6 +9,3 @@ done
 python manage.py collectstatic --noinput
 # makemigrations is commited so it doesn't have to run here.
 python manage.py migrate --noinput || exit 1
-
-# Start the server
-exec "$@"

@@ -11,16 +11,20 @@ services:
           path: ./frontend
           target: /app
   db:
+    restart: always
     image: postgres:17
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    env_file: "./backend/.env"
+    env_file: "./backend/.env.db.dev"
+    healthcheck:
+      #CHANGE 1: this command checks if the database is ready, right on the source db server
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend-dev:
     build:
       context: ./backend
@@ -28,18 +32,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-    environment:
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DEBUG: ${DEBUG}
-      DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
-      DATABASE_ENGINE: ${DATABASE_ENGINE}
-      DATABASE_NAME: ${DATABASE_NAME}
-      DATABASE_USERNAME: ${DATABASE_USERNAME}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_PORT: ${DATABASE_PORT}
+      db:
+        condition: service_healthy
     env_file: "./backend/.env"
 volumes:
   postgres_data:
