@@ -31,10 +31,6 @@ EXPOSE 8000
 # Run migrations
 # COPY docker-entrypoint.sh /docker-entrypoint.sh
 # RUN chmod a+x /docker-entrypoint.sh
-
-# Verify the file exists and is executable
-# RUN ls -la /docker-entrypoint.sh && file /docker-entrypoint.sh
-# RUN chown -R python /docker-entrypoint.sh
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# ENTRYPOINT ["./docker-entrypoint.sh"]
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
