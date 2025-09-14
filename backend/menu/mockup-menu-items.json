@@ -46,7 +46,7 @@
       "description": "Perfectly balanced espresso with steamed milk and a layer of foam.",
       "price": 4.5,
       "category": "Espresso Classics",
-      "type": "beverage"
+      "type": "drink"
     },
     {
       "id": 7,
@@ -54,7 +54,7 @@
       "description": "Espresso chilled with milk and a hint of vanilla syrup over ice.",
       "price": 5.75,
       "category": "Iced Coffee",
-      "type": "beverage"
+      "type": "drink"
     },
     {
       "id": 8,
@@ -62,7 +62,7 @@
       "description": "Freshly squeezed orange juice, served chilled.",
       "price": 5.25,
       "category": "Fresh Juices",
-      "type": "beverage"
+      "type": "drink"
     },
     {
       "id": 9,
@@ -70,7 +70,7 @@
       "description": "Ceremonial grade matcha whisked with steamed milk.",
       "price": 5.95,
       "category": "Tea Specialties",
-      "type": "beverage"
+      "type": "drink"
     },
     {
       "id": 10,
@@ -78,7 +78,7 @@
       "description": "Rich, creamy hot chocolate topped with whipped cream.",
       "price": 4.95,
       "category": "Warm Drinks",
-      "type": "beverage"
+      "type": "drink"
     },
     {
       "id": 11,
@@ -94,7 +94,7 @@
       "description": "Smooth cold brew coffee steeped for 18 hours, served black or with cream.",
       "price": 5.25,
       "category": "Iced Coffee",
-      "type": "beverage"
+      "type": "drink"
     }
   ]
 }

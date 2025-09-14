@@ -18,7 +18,8 @@
       "@core/*" : ["./src/app/core/*"],
       "@components/*": ["./src/app/shared/components/*"],
       "@pages/*": ["./src/app/pages/*"],
-      "@services/*": ["./src/app/shared/services/*"]
+      "@services/*": ["./src/app/shared/services/*"],
+      "@environment": ["./src/environments/environment.ts"]
     }
   },
   "angularCompilerOptions": {

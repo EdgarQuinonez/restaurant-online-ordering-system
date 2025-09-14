@@ -1,11 +1,15 @@
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { MenuItem } from '@core/menu/menu.service.interface';
-import mockUpMenuItems from './mockup-menu-items.json';
+import { environment } from '@environment';
 @Injectable({
   providedIn: 'root',
 })
 export class MenuService {
+  private http = inject(HttpClient);
+
   getMenuItems(): MenuItem[] {
-    return mockUpMenuItems.menuItems as MenuItem[];
+    const endpoint = `${environment.apiUrl}/menu`;
+    return this.http.get<MenuItem>(endpoint).subscribe();
   }
 }
