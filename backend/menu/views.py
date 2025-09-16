@@ -1,10 +1,11 @@
 import json
 
 from menu.models import MenuItem
+from menu.permissions import IsAdminOrReadOnly
 from menu.serializers import MenuItemSerializer
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
 
@@ -16,8 +17,20 @@ class MenuItemViewSet(viewsets.ModelViewSet):
 
     serializer_class = MenuItemSerializer
     queryset = MenuItem.objects.all()
+    permission_classes_by_action = {"create": [IsAdminUser], "list": [AllowAny]}
 
-    @action(detail=False, methods=["post"], permission_classes=[AllowAny])
+    def get_permissions(self):
+        try:
+            # return permission_classes depending on `action`
+            return [
+                permission()
+                for permission in self.permission_classes_by_action[self.action]
+            ]
+        except KeyError:
+            # action is not set return default permission_classes
+            return [permission() for permission in self.permission_classes]
+
+    @action(detail=False, methods=["post"])
     def upload_from_json(self, request):
         try:
             # Get the uploaded file from request

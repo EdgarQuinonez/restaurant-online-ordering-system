@@ -1,0 +1,9 @@
+@if (menuItems$ | async; as menuItems) {
+  @for (item of menuItems; track item.id) {
+    <ul>
+      <li>
+        {{ item.name }}
+      </li>
+    </ul>
+  }
+}

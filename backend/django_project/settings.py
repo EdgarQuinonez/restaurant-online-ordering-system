@@ -25,7 +25,10 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
 
-
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -36,10 +39,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -110,6 +115,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAdminUser",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
 }
