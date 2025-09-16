@@ -1,8 +1,14 @@
 export interface MenuItem {
   id: number;
   name: string;
-  description: string;
-  price: number;
   category: string;
-  type: 'food' | 'beverage';
+  type: 'food' | 'drink';
+  sizes: Size[];
+}
+
+export interface Size {
+  id: number;
+  name: string;
+  desc: string;
+  price: number;
 }

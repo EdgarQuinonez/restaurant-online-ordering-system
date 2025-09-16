@@ -1,0 +1,47 @@
+<div class="w-full h-auto aspect-square p-2">
+  <img class="w-full h-full object-contain" />
+</div>
+<div class="w-full border-t-2 flex flex-col items-center justify-center py-2">
+  <div class="w-full flex items-center justify-between">
+    <span class="text-sm uppercase">
+      {{ category }}
+    </span>
+    <span class="text-sm ml-2">
+      {{ selectedSize.desc }}
+    </span>
+  </div>
+  <div class="w-full flex items-center justify-between">
+    <span class="font-bold uppercase text-lg">
+      {{ name }}
+    </span>
+    <span class="font-bold text-lg ml-2">
+      {{
+        Intl.NumberFormat("es-MX", {
+          style: "currency",
+          currency: "MXN",
+          trailingZeroDisplay: "stripIfInteger",
+        }).format(selectedSize.price)
+      }}
+    </span>
+  </div>
+  <div
+    [class]="type === 'food' && 'invisible'"
+    class="w-full mt-4 flex items-center justify-center"
+  >
+    @for (size of orderedSizes; track size.id) {
+      <button
+        type="button"
+        (click)="selectedSize = size.id"
+        [class]="
+          selectedSize.id === size.id && 'text-surface-50 bg-surface-800'
+        "
+        class="px-2 py-2 bg-surface-50 w-full flex items-center justify-center"
+        ,
+      >
+        <span>
+          {{ labels[size.size] }}
+        </span>
+      </button>
+    }
+  </div>
+</div>
