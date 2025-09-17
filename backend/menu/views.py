@@ -1,8 +1,8 @@
 import json
 
-from menu.models import MenuItem
+from menu.models import MenuItem, Size
 from menu.permissions import IsAdminOrReadOnly
-from menu.serializers import MenuItemSerializer
+from menu.serializers import MenuItemSerializer, SizeSerializer
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -30,7 +30,7 @@ class MenuItemViewSet(viewsets.ModelViewSet):
             # action is not set return default permission_classes
             return [permission() for permission in self.permission_classes]
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post"], permission_classes=[IsAdminUser])
     def upload_from_json(self, request):
         try:
             # Get the uploaded file from request
@@ -52,8 +52,6 @@ class MenuItemViewSet(viewsets.ModelViewSet):
                 # Create menu item without using the original ID
                 menu_item_data = {
                     "name": item_data.get("name"),
-                    "description": item_data.get("description"),
-                    "price": item_data.get("price"),
                     "category": item_data.get("category"),
                     "type": item_data.get("type"),
                 }
@@ -86,3 +84,8 @@ class MenuItemViewSet(viewsets.ModelViewSet):
                 {"error": f"An error occurred: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class SizeViewSet(viewsets.ModelViewSet):
+    queryset = Size.objects.all()
+    serializer_class = SizeSerializer

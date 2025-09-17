@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.urls import include, path
-from menu.views import MenuItemViewSet
+from menu.views import MenuItemViewSet, SizeViewSet
 from rest_framework import routers, serializers, viewsets
 
 
@@ -39,6 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
 router = routers.DefaultRouter()
 router.register(r"users", UserViewSet)
 router.register(r"menu", MenuItemViewSet)
+router.register(r"sizes", SizeViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

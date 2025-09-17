@@ -15,7 +15,9 @@ docker compose --env-file ./backend/.env up --build --watch
 
 This automatically syncs changes made in frontend project.
 
-### Start bash session to inspect containers' project directories
+### Start shell in backend-dev container
+
+docker compose --env-file ./backend/.env exec -it backend-dev sh
 
 ## Environment
 

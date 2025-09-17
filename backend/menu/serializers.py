@@ -1,29 +1,21 @@
 from rest_framework import serializers
 
-from .models import MenuItem
+from .models import MenuItem, Size
+
+
+class SizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Size
+        fields = ["id", "name", "price", "description", "menu_item"]
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
-    type_display = serializers.CharField(source="get_type_display", read_only=True)
+    sizes = SizeSerializer(many=True, read_only=True)
 
     class Meta:
         model = MenuItem
-        fields = [
-            "id",
-            "name",
-            "description",
-            "price",
-            "category",
-            "type",
-            "type_display",
-        ]
+        fields = ["id", "name", "category", "type", "sizes"]
         read_only_fields = ["id"]
-
-    def validate_price(self, value):
-        """Ensure price is positive"""
-        if value <= 0:
-            raise serializers.ValidationError("Price must be greater than zero.")
-        return value
 
     def validate_type(self, value):
         """Ensure type is either 'food' or 'drink'"""
