@@ -34,6 +34,20 @@ DATABASE_PASSWORD=dbpassword
 DATABASE_HOST=db
 DATABASE_PORT=5432
 
+# Backend Project
+
+Hooked up with DRF, CORS and POSTGRES
+
+## Running migrations
+
+1. cd into backend
+   python manage.py makemigrations
+2. Rebuild the containers
+   docker compose --env-file ./backend/.env exec -it backend-dev sh
+3. Enter sh in backend-dev container
+   NOTE: Currently, I still have that error with entrypoint.sh file which would automate this on rebuild
+   python manage.py migrate
+
 # Frontend Project
 
 Is an Angular project which I aim to keep updated as long as I keep working with this same framework.

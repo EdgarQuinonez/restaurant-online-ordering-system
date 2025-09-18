@@ -1,0 +1,21 @@
+name,category,type,imgAlt,imgSrc,size_name1,price1,description1,size_name2,price2,description2,size_name3,price3,description3
+Café Americano,Bebidas,drink,"Café negro americano","menu/menu_item_1.webp",Chico,25,"250 ml",Mediano,35,"350 ml",Grande,45,"450 ml"
+Café Latte,Bebidas,drink,"Café con leche vaporizada","menu/menu_item_1.webp",Chico,35,"300 ml",Mediano,45,"400 ml",Grande,55,"500 ml"
+Capuchino,Bebidas,drink,"Café espresso con leche espumosa","menu/menu_item_1.webp",Chico,40,"250 ml",Mediano,50,"350 ml",Grande,60,"450 ml"
+Chocolate Caliente,Bebidas,drink,"Chocolate caliente cremoso","menu/menu_item_1.webp",Chico,35,"250 ml",Mediano,45,"350 ml",Grande,55,"450 ml"
+Té Negro,Bebidas,drink,"Té negro de calidad premium","menu/menu_item_1.webp",Taza Individual,25,"200 ml",Taza Doble,40,"400 ml",,
+Jugo de Naranja Natural,Bebidas,drink,"Jugo de naranja recién exprimido","menu/menu_item_1.webp",Vaso,35,"300 ml",Jarra,65,"600 ml",,
+Pan Francés,Postres,food,"Pan francés con canela y miel","menu/menu_item_1.webp",Porción Individual,75,"3 piezas con fruta",Porción Familiar,140,"6 piezas con fruta",,
+Waffles Belgas,Postres,food,"Waffles belgas crujientes","menu/menu_item_1.webp",Individual,85,"Con miel y mantequilla",Especial,120,"Con frutas y crema batida",,
+Hot Cakes,Desayunos,food,"Hot cakes esponjosos","menu/menu_item_1.webp",Orden Chica,65,"2 hot cakes",Orden Grande,95,"4 hot cakes con miel",,
+Huevos Benedictinos,Desayunos,food,"Huevos pochados con salsa holandesa","menu/menu_item_1.webp",Clásico,120,"Con jamón y english muffin",Especial,150,"Con espinacas y salmón",,
+Omelette,Desayunos,food,"Omelette de claras de huevo","menu/menu_item_1.webp",Vegetariano,85,"Con champiñones y espinacas",Mexicano,95,"Con jamón, queso y chile",,
+Molletes,Desayunos,food,"Pan tostado con frijoles y queso","menu/menu_item_1.webp",Simple,45,"Medio bolillo",Completo,75,"Bolillo completo con pico de gallo",,
+Ensalada de Frutas,Postres,food,"Mezcla fresca de frutas de temporada","menu/menu_item_1.webp",Chica,55,"Vaso 250 ml",Grande,85,"Tazón 400 ml",,
+Croissant,Pastelería,food,"Croissant de mantequilla francés","menu/menu_item_1.webp",Simple,25,"Croissant natural",Relleno,40,"Con chocolate o mermelada",,
+Empanada de Manzana,Pastelería,food,"Empanada horneada de manzana","menu/menu_item_1.webp",Individual,35,"Empanada individual",Combo,60,"Dos empanadas con café",,
+Sandwich de Pollo,Desayunos,food,"Sandwich de pollo a la parrilla","menu/menu_item_1.webp",Mediano,75,"Pan integral con aguacate",Grande,95,"Pan artesanal con papas",,
+Yogurt con Granola,Desayunos,food,"Yogurt natural con granola casera","menu/menu_item_1.webp",Individual,45,"Tazón 200 ml",Familiar,80,"Tazón 400 ml con miel",,
+Malteada de Chocolate,Bebidas,drink,"Malteada cremosa de chocolate","menu/menu_item_1.webp",Regular,65,"400 ml",Grande,85,"600 ml",,
+Tostadas de Aguacate,Desayunos,food,"Pan tostado con aguacate y tomate","menu/menu_item_1.webp",Simple,55,"Una tostada",Doble,85,"Dos tostadas con huevo",,
+Quiche Lorraine,Desayunos,food,"Quiche con tocino y queso","menu/menu_item_1.webp",Rebanada,65,"Porción individual",Porción Grande,110,"Doble porción con ensalada",,

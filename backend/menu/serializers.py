@@ -6,7 +6,7 @@ from .models import MenuItem, Size
 class SizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Size
-        fields = ["id", "name", "price", "description", "menu_item"]
+        fields = ["id", "order", "name", "price", "description", "menu_item"]
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MenuItem
-        fields = ["id", "name", "category", "type", "sizes"]
+        fields = ["id", "name", "category", "type", "imgAlt", "imgSrc", "sizes"]
         read_only_fields = ["id"]
 
     def validate_type(self, value):
