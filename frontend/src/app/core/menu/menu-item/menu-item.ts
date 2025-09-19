@@ -8,7 +8,10 @@ import { MenuItem as MenuItemInterface } from '@core/menu/menu.service.interface
   styleUrl: './menu-item.css',
 })
 export class MenuItem {
+  name = input.required<MenuItemInterface['name']>();
+  src = input.required<MenuItemInterface['imgSrc']>();
+  alt = input.required<MenuItemInterface['imgAlt']>();
   category = input.required<MenuItemInterface['category']>();
-  sizes = input.required();
-  name = input.required();
+  sizes = input.required<MenuItemInterface['sizes']>();
+  type = input.required<MenuItemInterface['type']>();
 }
