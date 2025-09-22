@@ -54,15 +54,15 @@
             Todos
           </button>
         </li>
-        @for (cat of filteredCategories(); track cat.name) {
+        @for (cat of categories(); track cat) {
           <li>
             <button
               type="button"
               class="base-btn capitalize min-w-fit text-nowrap"
-              [class.bg-accent]="category() === cat.name"
-              (click)="category.set(cat.name)"
+              [class.bg-accent]="category() === cat"
+              (click)="category.set(cat)"
             >
-              {{ cat.name }}
+              {{ cat }}
             </button>
           </li>
         }
@@ -70,8 +70,9 @@
     </form>
 
     <ul class="w-full md:w-256 md:mx-auto grid md:grid-cols-2 pb-12 px-2 md:px-0 gap-4 md:gap-8">
+  @if (filteredMenuItems().length >= 0 ) {
       @for (item of filteredMenuItems(); track item.id) {
-        <li class="w-full flex flex-col items-center justify-center">
+ <li class="w-full flex flex-col items-center justify-center">
           <app-menu-item
             [name]="item.name"
             [src]="item.imgSrc"
@@ -82,5 +83,7 @@
           />
         </li>
       }
+
+  }
 
     </ul>

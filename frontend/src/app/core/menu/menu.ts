@@ -1,8 +1,12 @@
 import { signal, computed, inject, Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MenuService } from './menu.service';
-import { MenuItem as MenuItemInterface, Category } from './menu.service.interface';
-import { Observable, tap, pipe } from 'rxjs';
+import {
+  MenuItem as MenuItemInterface,
+  Category,
+} from './menu.service.interface';
+import { Observable, tap, pipe, map, filter, switchMap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MenuItem } from './menu-item/menu-item';
 @Component({
   selector: 'app-menu',
@@ -14,42 +18,39 @@ export class Menu {
   private menuService = inject(MenuService);
 
   menuItems$!: Observable<MenuItemInterface[]>;
-  categories!: Category[];
-  filteredMenuItems$!: Observable<MenuItemInterface[]>;
+  menuItems: MenuItemInterface[] = [];
 
   ngOnInit() {
-    this.menuItems$ = this.menuService.getMenuItems().pipe(
-      tap(menuItems => {
-    const categoryMap = new Map<string, Category>();
-
-    menuItems.forEach(item => {
-      const key = `${item.type}-${item.category}`;
-      if (!categoryMap.has(key)) {
-        categoryMap.set(key, {
-          name: item.category,
-          type: item.type
-        });
-      }
-      })
-    );
+    this.menuItems$ = this.menuService.getMenuItems();
+    this.menuItems$.subscribe((items) => (this.menuItems = items));
   }
-
 
   types = ['drink', 'food'];
   type = signal<string>('drink');
   category = signal<string>('all');
 
-  filteredCategories = computed(() => {
-    return this.categories.filter((cat) => cat.type === this.type());
-  });
+  // menuItems = toSignal(this.menuItems$, { initialValue: [] });
 
   filteredMenuItems = computed(() => {
-    return this.menuItems().filter((item) => {
-      const matchesType = item.type === this.type();
+    return this.menuItems.filter((item) => {
       const matchesCategory =
-        this.category() === 'all' || item.category === this.category();
-      return matchesType && matchesCategory;
+        item.category === 'all' || item.category === this.category();
+      const matchesType = item.type === this.type();
+
+      return matchesCategory && matchesType;
     });
+  });
+
+  categories = computed(() => {
+    const typeItems = this.menuItems.filter(
+      (item) => item.type === this.type(),
+    );
+    const uniqueCategories = [
+      ...new Set(typeItems.map((item) => item.category)),
+    ];
+
+    // Return with 'all' option first
+    return ['all', ...uniqueCategories];
   });
 
   setType(newType: string): void {
