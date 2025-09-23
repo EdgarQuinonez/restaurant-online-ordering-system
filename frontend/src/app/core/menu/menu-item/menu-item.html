@@ -1,18 +1,49 @@
 <div class="w-full h-auto aspect-square p-2">
-  <img [src]="src()" [alt]="alt()" class="w-full h-full object-contain" fill />
+  <img [src]="src()" [alt]="alt()" class="w-full h-full object-contain" />
 </div>
+
 <div class="w-full border-t-2 flex flex-col items-center justify-center py-2">
   <div class="w-full flex items-center justify-between">
     <span class="text-sm uppercase">
       {{ category() }}
     </span>
   </div>
+
   <div class="w-full flex items-center justify-between">
     <span class="font-bold uppercase text-lg">
       {{ name() }}
     </span>
-    <!-- <span class="font-bold text-lg ml-2"> -->
-    <!--   {{ formattedPrice() }} -->
-    <!-- </span> -->
+    <span class="font-bold text-lg ml-2">
+      {{ formattedPrice() }}
+    </span>
   </div>
+
+  <!-- Size buttons section -->
+  @if (sortedSizes() && sortedSizes().length > 0) {
+    <div class="w-full mt-3">
+      <div class="flex flex-wrap gap-2">
+        @for (size of sortedSizes(); track size.id) {
+          <button
+            type="button"
+            class="px-3 py-1 text-sm border rounded transition-all"
+            [class.bg-accent]="selectedSizeId() === size.id"
+            [class.border-accent]="selectedSizeId() === size.id"
+            [class.border-gray-300]="selectedSizeId() !== size.id"
+            (click)="selectSize(size.id)"
+          >
+            {{ size.name }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Description section -->
+  @if (selectedSizeDescription()) {
+    <div class="w-full mt-3">
+      <p class="text-sm text-gray-600">
+        {{ selectedSizeDescription() }}
+      </p>
+    </div>
+  }
 </div>

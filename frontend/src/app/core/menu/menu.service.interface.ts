@@ -13,11 +13,6 @@ export interface Size {
   order: number;
   name: string;
   description: string;
-  price: number;
+  price: string;
   menu_item: number;
-}
-
-export interface Category {
-  name: string;
-  type: 'food' | 'drink';
 }

@@ -36,4 +36,8 @@
   h1 {
     @apply text-2xl font-bold text-center;
   }
+
+  body {
+    background-color: #fff;
+  }
 }

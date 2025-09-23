@@ -1,78 +1,82 @@
 <form name="menuForm" class="flex flex-col w-full items-center justify-center">
-      <div class="flex items-center justify-center gap-4 py-12">
-        <button
-          type="button"
-          (click)="setType('drink')"
-          class="flex flex-col gap-2 items-center justify-center"
-        >
-          <div
-            class="flex flex-col items-center justify-center w-32 h-32 rounded-full transition-all border-2"
-            [class.border-solid]="type() === 'drink'"
-            [class.border-dashed]="type() !== 'drink'"
-            [class.opacity-100]="type() === 'drink'"
-            [class.opacity-50]="type() !== 'drink'"
-            [class.bg-accent/50]="type() === 'drink'"
-          >
-            <i class="block w-26 h-26">
-              <!-- Replace with Angular equivalent of CoffeeMug component -->
-              <span class="text-surface-primary">☕</span>
-            </i>
-          </div>
-          <span class="mt-4">Bebidas</span>
-        </button>
-
-        <button
-          type="button"
-          (click)="setType('food')"
-          class="flex flex-col gap-2 items-center justify-center"
-        >
-          <div
-            class="flex flex-col items-center justify-center w-32 h-32 rounded-full transition-all border-2"
-            [class.border-solid]="type() === 'food'"
-            [class.border-dashed]="type() !== 'food'"
-            [class.opacity-100]="type() === 'food'"
-            [class.opacity-50]="type() !== 'food'"
-            [class.bg-accent/50]="type() === 'food'"
-          >
-            <i class="block w-26 h-26">
-              <!-- Replace with Angular equivalent of Joqueis component -->
-              <span class="text-surface-primary">🥐</span>
-            </i>
-          </div>
-          <span class="mt-4">foods</span>
-        </button>
+  <div class="flex items-center justify-center gap-4 py-12">
+    <button
+      type="button"
+      (click)="setType('drink')"
+      class="flex flex-col gap-2 items-center justify-center"
+    >
+      <div
+        class="flex flex-col items-center justify-center w-32 h-32 rounded-full transition-all border-2"
+        [class.border-solid]="type() === 'drink'"
+        [class.border-dashed]="type() !== 'drink'"
+        [class.opacity-100]="type() === 'drink'"
+        [class.opacity-50]="type() !== 'drink'"
+        [class.bg-accent/50]="type() === 'drink'"
+      >
+        <i class="block w-26 h-26">
+          <!-- Replace with Angular equivalent of CoffeeMug component -->
+          <span class="text-surface-primary">☕</span>
+        </i>
       </div>
+      <span class="mt-4">Bebidas</span>
+    </button>
 
-      <ul class="w-full md:w-fit mx-auto flex items-center justify-start px-2 py-4 mb-12 gap-2 overflow-hidden overflow-x-auto">
+    <button
+      type="button"
+      (click)="setType('food')"
+      class="flex flex-col gap-2 items-center justify-center"
+    >
+      <div
+        class="flex flex-col items-center justify-center w-32 h-32 rounded-full transition-all border-2"
+        [class.border-solid]="type() === 'food'"
+        [class.border-dashed]="type() !== 'food'"
+        [class.opacity-100]="type() === 'food'"
+        [class.opacity-50]="type() !== 'food'"
+        [class.bg-accent/50]="type() === 'food'"
+      >
+        <i class="block w-26 h-26">
+          <!-- Replace with Angular equivalent of Joqueis component -->
+          <span class="text-surface-primary">🥐</span>
+        </i>
+      </div>
+      <span class="mt-4">Comidas</span>
+    </button>
+  </div>
+
+  <ul class="w-full md:w-fit mx-auto flex items-center justify-start px-2 py-4 mb-12 gap-2 overflow-hidden overflow-x-auto">
+    <li>
+      <button
+        type="button"
+        class="base-btn min-w-fit text-nowrap"
+        [class.bg-accent]="category() === 'all'"
+        (click)="setCategory('all')"
+      >
+        Todos
+      </button>
+    </li>
+    @if (categories$ | async; as categories) {
+      @for (cat of categories; track cat) {
         <li>
           <button
             type="button"
-            class="base-btn min-w-fit text-nowrap"
-            [class.bg-accent]="category() === 'all'"
-            (click)="category.set('all')"
+            class="base-btn capitalize min-w-fit text-nowrap"
+            [class.bg-accent]="category() === cat"
+            (click)="setCategory(cat)"
           >
-            Todos
+            {{ cat }}
           </button>
         </li>
-        @for (cat of categories(); track cat) {
-          <li>
-            <button
-              type="button"
-              class="base-btn capitalize min-w-fit text-nowrap"
-              [class.bg-accent]="category() === cat"
-              (click)="category.set(cat)"
-            >
-              {{ cat }}
-            </button>
-          </li>
-        }
-      </ul>
-    </form>
+      }
+    }
+  </ul>
+</form>
 
-    <ul class="w-full md:w-256 md:mx-auto grid md:grid-cols-2 pb-12 px-2 md:px-0 gap-4 md:gap-8">
-  @if (filteredMenuItems().length >= 0 ) {
-      @for (item of filteredMenuItems(); track item.id) {
- <li class="w-full flex flex-col items-center justify-center">
+<!-- Menu items list using async pipe -->
+<ul class="w-full md:w-256 md:mx-auto grid md:grid-cols-2 pb-12 px-2 md:px-0 gap-4 md:gap-8">
+  @if (menuItems$ | async; as menuItems) {
+    @if (menuItems.length > 0) {
+      @for (item of menuItems; track item.id) {
+        <li class="w-full flex flex-col items-center justify-center">
           <app-menu-item
             [name]="item.name"
             [src]="item.imgSrc"
@@ -83,7 +87,14 @@
           />
         </li>
       }
-
+    } @else {
+      <li class="col-span-2 text-center py-8">
+        <p>No items found for the selected filters.</p>
+      </li>
+    }
+  } @else {
+    <li class="col-span-2 text-center py-8">
+      <p>Loading menu items...</p>
+    </li>
   }
-
-    </ul>
+</ul>

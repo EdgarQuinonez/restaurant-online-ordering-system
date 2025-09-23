@@ -69,3 +69,5 @@ For any component that will be unique to certain component or page it must be al
 ## Project Naming Conventions
 
 Pages take the name without any appendix
+
+## Format Images with ffmpeg for menu
