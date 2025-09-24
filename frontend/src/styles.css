@@ -40,4 +40,8 @@
   body {
     background-color: #fff;
   }
+
+  .base-btn {
+    @apply px-3 py-2 border border-solid border-(--color-surface-200) rounded-lg font-bold;
+  }
 }

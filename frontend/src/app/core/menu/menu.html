@@ -13,12 +13,11 @@
         [class.opacity-50]="type() !== 'drink'"
         [class.bg-accent/50]="type() === 'drink'"
       >
-        <i class="block w-26 h-26">
-          <!-- Replace with Angular equivalent of CoffeeMug component -->
-          <span class="text-surface-primary">☕</span>
-        </i>
+        <div class="block w-26 h-26 object-cover">
+          <img src="drink_type.webp" alt="coffee art" class="w-full h-full">
+        </div>
       </div>
-      <span class="mt-4">Bebidas</span>
+      <span class="mt-4 ">Bebidas</span>
     </button>
 
     <button
@@ -34,12 +33,11 @@
         [class.opacity-50]="type() !== 'food'"
         [class.bg-accent/50]="type() === 'food'"
       >
-        <i class="block w-26 h-26">
-          <!-- Replace with Angular equivalent of Joqueis component -->
-          <span class="text-surface-primary">🥐</span>
-        </i>
+        <div class="block w-26 h-26 object-cover">
+          <img src="food_type.webp" alt="pancakes con moras" class="w-full h-full">
+        </div>
       </div>
-      <span class="mt-4">Comidas</span>
+      <span class="mt-4 ">Desayuno/Comida</span>
     </button>
   </div>
 
