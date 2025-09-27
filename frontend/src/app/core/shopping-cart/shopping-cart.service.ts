@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { LocalStorageService } from '@services/local-storage.service'; // Adjust path as needed
 import {
   CartItem,
@@ -21,15 +21,19 @@ export class ShoppingCartService {
   // Keep state of shopping cart in a variable
   private cartState: ShoppingCart = this.loadCartFromStorage();
 
-  // 1. Get shopping cart items
+  // 1. Create cart$ BehaviorSubject to emit cart state changes
+  private cartSubject = new BehaviorSubject<ShoppingCart>(this.cartState);
+  public cart$ = this.cartSubject.asObservable();
+
+  // 2. Get shopping cart items
   getShoppingCart(): ShoppingCart {
     return { ...this.cartState }; // Return a copy to prevent direct mutation
   }
 
-  // 2. Keep state of items in cart (CRUD operations)
+  // 3. Keep state of items in cart (CRUD operations)
 
   // Create/Add item to cart
-  addItem(item: Omit<CartItem, 'id'>): ShoppingCart {
+  addItem(item: CartItem): ShoppingCart {
     const existingItem = this.cartState.items.find(
       (cartItem) => cartItem.productId === item.productId,
     );
@@ -39,7 +43,6 @@ export class ShoppingCartService {
     } else {
       const newItem: CartItem = {
         ...item,
-        id: this.generateId(),
       };
       this.cartState.items.push(newItem);
     }
@@ -86,7 +89,7 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // 5. Checkout function
+  // 4. Checkout function
   checkout(): Observable<any> {
     const checkoutRequest: CheckoutRequest = {
       items: this.cartState.items.map((item) => ({
@@ -108,6 +111,9 @@ export class ShoppingCartService {
 
     // Save to localStorage for persistence across sessions
     this.localStorageService.setItem(this.CART_KEY, this.cartState);
+
+    // Emit the new cart state to all subscribers
+    this.cartSubject.next({ ...this.cartState });
   }
 
   private loadCartFromStorage(): ShoppingCart {
@@ -139,10 +145,6 @@ export class ShoppingCartService {
     };
   }
 
-  private generateId(): number {
-    return Date.now() + Math.floor(Math.random() * 1000);
-  }
-
   // Additional utility methods
   getCartItemCount(): number {
     return this.cartState.itemCount;
@@ -159,6 +161,7 @@ export class ShoppingCartService {
   // Optional: Method to force reload from storage (useful for multi-tab scenarios)
   reloadFromStorage(): void {
     this.cartState = this.loadCartFromStorage();
+    this.cartSubject.next({ ...this.cartState });
   }
 
   // Optional: Method to sync cart across browser tabs
@@ -166,6 +169,7 @@ export class ShoppingCartService {
     window.addEventListener('storage', (event) => {
       if (event.key === this.CART_KEY) {
         this.cartState = this.loadCartFromStorage();
+        this.cartSubject.next({ ...this.cartState });
       }
     });
   }
