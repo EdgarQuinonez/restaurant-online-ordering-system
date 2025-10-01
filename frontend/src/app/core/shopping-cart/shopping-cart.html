@@ -1,1 +1,144 @@
-<app-action-bar></app-action-bar>
+<!-- Action Bar -->
+<div class="block md:hidden">
+  <!-- Fixed Bottom Action Bar -->
+  <div
+    class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg p-4 z-50"
+  >
+    <!-- Cart Button -->
+    <button type="button" class="w-full" (click)="cartVisible = true" pButton>
+      <i class="pi pi-shopping-cart"> </i>
+      <span class="font-bold text-lg"> Carrito </span>
+      <p-badge [value]="cartItemCount.toString()" />
+    </button>
+
+    <!-- Total Price -->
+    <div class="text-right font-bold text-lg">
+      Total: {{ cartTotal | currency: "MXN" }}
+    </div>
+  </div>
+</div>
+
+<!-- Tray -->
+<p-drawer
+  [(visible)]="cartVisible"
+  position="right"
+  [style]="{ width: 'min(400px, 100vw)' }"
+  #drawerRef
+>
+  <ng-template pTemplate="headless">
+    <div class="flex flex-col h-full">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-6 pt-4 shrink-0 border-b border-surface-200 dark:border-surface-700 pb-4"
+      >
+        <span>
+          <p-button
+            type="button"
+            (click)="closeCallback($event)"
+            icon="pi pi-arrow-left"
+            rounded="true"
+            outlined="true"
+            styleClass="h-8 w-8"
+          >
+          </p-button>
+        </span>
+        <h1 class="font-semibold text-2xl text-primary">Tu Carrito</h1>
+      </div>
+
+      <!-- Cart Items -->
+      <div class="flex-1 overflow-y-auto p-4">
+        @if (cartItemCount === 0) {
+          <div class="text-center py-8">
+            <i class="pi pi-shopping-cart text-6xl text-surface-300 mb-4"></i>
+            <h3
+              class="text-xl font-semibold text-surface-700 dark:text-surface-300 mb-2"
+            >
+              Tu Carrito Está Vacío
+            </h3>
+            <p class="text-surface-500 dark:text-surface-400">
+              Agrega Productos al Carrito Para Comenzar
+            </p>
+          </div>
+        } @else {
+          <div class="space-y-4">
+            @for (item of cartItems; track item.productId) {
+              <div
+                class="flex items-center gap-4 p-4 border border-surface-200 dark:border-surface-700 rounded-lg bg-surface-50 dark:bg-surface-800"
+              >
+                <!-- Item Details -->
+                <div class="flex-1 min-w-0">
+                  <h4
+                    class="font-semibold text-surface-900 dark:text-surface-100 truncate"
+                  >
+                    {{ item.name }}
+                  </h4>
+                  <p
+                    class="text-surface-600 dark:text-surface-400 text-sm mt-1"
+                  >
+                    ${{ item.price | number: "1.2-2" }}
+                  </p>
+                  <p class="text-primary font-semibold text-sm mt-1">
+                    ${{ getItemTotal(item) | number: "1.2-2" }}
+                  </p>
+                </div>
+                <!-- Quantity Controls -->
+                <!-- Remove Button -->
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Footer with Checkout Button -->
+      @if (cartItemCount > 0) {
+        <div
+          class="mt-auto border-t border-surface-200 dark:border-surface-700"
+        >
+          <!-- Cart Summary -->
+          <div class="p-4 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-surface-600 dark:text-surface-400"
+                >Subtotal</span
+              >
+              <span
+                class="font-semibold text-surface-900 dark:text-surface-100"
+              >
+                ${{ cartTotal | number: "1.2-2" }}
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-surface-600 dark:text-surface-400">Items</span>
+              <span
+                class="font-semibold text-surface-900 dark:text-surface-100"
+              >
+                {{ cartItemCount }}
+              </span>
+            </div>
+            <div
+              class="pt-2 border-t border-surface-200 dark:border-surface-700"
+            >
+              <div class="flex justify-between items-center text-lg">
+                <span class="font-bold text-surface-900 dark:text-surface-100"
+                  >Total</span
+                >
+                <span class="font-bold text-primary">
+                  ${{ cartTotal | number: "1.2-2" }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Checkout Button -->
+          <div class="p-4">
+            <p-button
+              label="Checkout"
+              icon="pi pi-credit-card"
+              styleClass="w-full"
+            >
+            </p-button>
+          </div>
+        </div>
+      }
+    </div>
+  </ng-template>
+</p-drawer>
