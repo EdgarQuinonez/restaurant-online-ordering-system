@@ -76,12 +76,7 @@
       @for (item of menuItems; track item.id) {
         <li class="w-full flex flex-col items-center justify-center">
           <app-menu-item
-            [name]="item.name"
-            [src]="item.imgSrc"
-            [alt]="item.imgAlt"
-            [category]="item.category"
-            [sizes]="item.sizes"
-            [type]="item.type"
+            [menuItem] = item
           />
         </li>
       }

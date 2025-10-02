@@ -32,10 +32,11 @@ export class ShoppingCartService {
 
   // 3. Keep state of items in cart (CRUD operations)
 
-  // Create/Add item to cart
+  // Create/Add item to cart - UPDATED to support same product with different sizes
   addItem(item: CartItem): ShoppingCart {
     const existingItem = this.cartState.items.find(
-      (cartItem) => cartItem.productId === item.productId,
+      (cartItem) =>
+        cartItem.productId === item.productId && cartItem.size === item.size,
     );
 
     if (existingItem) {
@@ -51,20 +52,26 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // Read - Get specific item
-  getItem(productId: number): CartItem | undefined {
-    return this.cartState.items.find((item) => item.productId === productId);
+  // Read - Get specific item - UPDATED to include size
+  getItem(productId: number, size: string): CartItem | undefined {
+    return this.cartState.items.find(
+      (item) => item.productId === productId && item.size === size,
+    );
   }
 
-  // Update item quantity
-  updateItemQuantity(productId: number, quantity: number): ShoppingCart {
+  // Update item quantity - UPDATED to include size
+  updateItemQuantity(
+    productId: number,
+    size: string,
+    quantity: number,
+  ): ShoppingCart {
     const item = this.cartState.items.find(
-      (cartItem) => cartItem.productId === productId,
+      (cartItem) => cartItem.productId === productId && cartItem.size === size,
     );
 
     if (item) {
       if (quantity <= 0) {
-        return this.removeItem(productId);
+        return this.removeItem(productId, size);
       }
       item.quantity = quantity;
       this.updateCartState();
@@ -73,13 +80,18 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // Delete item from cart
-  removeItem(productId: number): ShoppingCart {
+  // Delete item from cart - UPDATED to include size
+  removeItem(productId: number, size: string): ShoppingCart {
     this.cartState.items = this.cartState.items.filter(
-      (item) => item.productId !== productId,
+      (item) => !(item.productId === productId && item.size === size),
     );
     this.updateCartState();
     return this.getShoppingCart();
+  }
+
+  // NEW: Get all items for a specific product (across all sizes)
+  getItemsByProductId(productId: number): CartItem[] {
+    return this.cartState.items.filter((item) => item.productId === productId);
   }
 
   // Clear entire cart
@@ -89,11 +101,12 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // 4. Checkout function
+  // 4. Checkout function - UPDATED to include size in checkout request
   checkout(): Observable<any> {
     const checkoutRequest: CheckoutRequest = {
       items: this.cartState.items.map((item) => ({
         productId: item.productId,
+        size: item.size, // Added size to checkout request
         quantity: item.quantity,
         price: item.price,
       })),

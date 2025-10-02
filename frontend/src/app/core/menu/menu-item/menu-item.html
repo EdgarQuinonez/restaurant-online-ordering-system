@@ -13,9 +13,42 @@
     <span class="font-bold uppercase text-lg">
       {{ name() }}
     </span>
-    <span class="font-bold text-lg ml-2">
-      {{ formattedPrice() }}
-    </span>
+    <div class="flex items-center gap-2">
+      <span class="font-bold text-lg">
+        {{ formattedPrice() }}
+      </span>
+
+      <!-- Cart quantity controls -->
+      @if (isInCart()) {
+        <div class="flex items-center border border-gray-300 rounded-lg">
+          <button
+            type="button"
+            class="px-2 py-1 hover:bg-gray-100 transition-colors"
+            (click)="decrementQuantity()"
+          >
+            -
+          </button>
+          <span class="px-3 py-1 text-sm font-medium">
+            {{ itemQuantity() }}
+          </span>
+          <button
+            type="button"
+            class="px-2 py-1 hover:bg-gray-100 transition-colors"
+            (click)="incrementQuantity()"
+          >
+            +
+          </button>
+        </div>
+      } @else {
+        <button
+          type="button"
+          class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          (click)="addToCart()"
+        >
+          Add
+        </button>
+      }
+    </div>
   </div>
 
   <!-- Size buttons section -->

@@ -1,9 +1,10 @@
 export interface CartItem {
   productId: number;
+  size: string;
   name: string;
   price: number;
   quantity: number;
-  imageUrl?: string;
+  imageUrl: string;
 }
 
 export interface ShoppingCart {
@@ -15,6 +16,7 @@ export interface ShoppingCart {
 export interface CheckoutRequest {
   items: {
     productId: number;
+    size: string;
     quantity: number;
     price: number;
   }[];
