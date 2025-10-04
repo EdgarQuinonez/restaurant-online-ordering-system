@@ -1,5 +1,4 @@
 import { Component, input, signal, computed, inject } from '@angular/core';
-import { Size } from '@core/menu/menu.service.interface';
 import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
 import { MenuItem as MenuItemInterface } from '@core/menu/menu.service.interface';
 import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
@@ -25,6 +24,7 @@ export class MenuItem {
 
   // Internal state
   selectedSizeId = signal<number | null>(null);
+  itemQuantity = signal<number>(0);
 
   // Computed properties
   sortedSizes = computed(() => {
@@ -54,26 +54,6 @@ export class MenuItem {
     return '';
   });
 
-  // Cart functionality computed properties
-  cartItem = computed(() => {
-    const selectedSize = this.selectedSize();
-    if (!selectedSize) return null;
-
-    return this.shoppingCartService.getItem(
-      this.productId(),
-      // TODO: Update to use selectedSize ID instead
-      selectedSize.name,
-    );
-  });
-
-  itemQuantity = computed(() => {
-    return this.cartItem()?.quantity || 0;
-  });
-
-  isInCart = computed(() => {
-    return this.itemQuantity() > 0;
-  });
-
   ngOnInit() {
     // Auto-select first size by default (after sorting)
     const sortedSizes = this.sortedSizes();
@@ -101,14 +81,7 @@ export class MenuItem {
     };
 
     this.shoppingCartService.addItem(cartItem);
-  }
-
-  // 2. Remove menu item from cart based on productId and size
-  removeFromCart(): void {
-    const selectedSize = this.selectedSize();
-    if (!selectedSize) return;
-
-    this.shoppingCartService.removeItem(this.productId(), selectedSize.name);
+    this.itemQuantity.set(1);
   }
 
   // 3. Update menu item quantity in cart based on productId and size
@@ -116,30 +89,45 @@ export class MenuItem {
     const selectedSize = this.selectedSize();
     if (!selectedSize) return;
 
-    if (quantity <= 0) {
-      this.removeFromCart();
-    } else {
+    if (
+      this.shoppingCartService.getItem(this.productId(), this.selectedSize.name)
+    ) {
       this.shoppingCartService.updateItemQuantity(
         this.productId(),
         selectedSize.name,
         quantity,
       );
+
+      this.itemQuantity.set(quantity);
+    } else {
+      this.addToCart();
     }
   }
 
   // Convenience methods for common operations
   incrementQuantity(): void {
-    this.updateQuantity(this.itemQuantity() + 1);
+    const cartItem = this.shoppingCartService.getItem(
+      this.productId(),
+      this.selectedSize.name,
+    );
+
+    if (cartItem) {
+      const newQuantity = cartItem.quantity + 1;
+      this.updateQuantity(newQuantity);
+    } else {
+      this.addToCart();
+    }
   }
 
   decrementQuantity(): void {
-    this.updateQuantity(this.itemQuantity() - 1);
-  }
+    const cartItem = this.shoppingCartService.getItem(
+      this.productId(),
+      this.selectedSize.name,
+    );
 
-  // Method to handle add/remove toggle
-  toggleCart(): void {
-    if (this.isInCart()) {
-      this.removeFromCart();
+    if (cartItem) {
+      const newQuantity = cartItem.quantity - 1;
+      this.updateQuantity(newQuantity);
     } else {
       this.addToCart();
     }

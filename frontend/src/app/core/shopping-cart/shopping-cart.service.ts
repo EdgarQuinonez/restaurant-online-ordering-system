@@ -73,6 +73,7 @@ export class ShoppingCartService {
       if (quantity <= 0) {
         return this.removeItem(productId, size);
       }
+
       item.quantity = quantity;
       this.updateCartState();
     }

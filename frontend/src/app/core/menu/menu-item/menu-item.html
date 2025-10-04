@@ -19,35 +19,25 @@
       </span>
 
       <!-- Cart quantity controls -->
-      @if (isInCart()) {
-        <div class="flex items-center border border-gray-300 rounded-lg">
-          <button
-            type="button"
-            class="px-2 py-1 hover:bg-gray-100 transition-colors"
-            (click)="decrementQuantity()"
-          >
-            -
-          </button>
-          <span class="px-3 py-1 text-sm font-medium">
-            {{ itemQuantity() }}
-          </span>
-          <button
-            type="button"
-            class="px-2 py-1 hover:bg-gray-100 transition-colors"
-            (click)="incrementQuantity()"
-          >
-            +
-          </button>
-        </div>
-      } @else {
+      <div class="flex flex-col items-center">
         <button
           type="button"
-          class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          (click)="addToCart()"
+          class="border border-gray-200 rounded-lg w-8 h-8 p-1 hover:bg-gray-100 transition-colors"
+          (click)="decrementQuantity()"
         >
-          Add
+          -
         </button>
-      }
+        <span class="w-8 h-8 p-1 text-center text-sm font-medium">
+          {{ itemQuantity() }}
+        </span>
+        <button
+          type="button"
+          class="border border-gray-200 rounded-lg w-8 h-8 p-1 hover:bg-gray-100 transition-colors"
+          (click)="incrementQuantity()"
+        >
+          +
+        </button>
+      </div>
     </div>
   </div>
 
