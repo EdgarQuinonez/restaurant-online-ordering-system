@@ -61,29 +61,8 @@
           </div>
         } @else {
           <div class="space-y-4">
-            @for (item of cartItems; track item.productId) {
-              <div
-                class="flex items-center gap-4 p-4 border border-surface-200 dark:border-surface-700 rounded-lg bg-surface-50 dark:bg-surface-800"
-              >
-                <!-- Item Details -->
-                <div class="flex-1 min-w-0">
-                  <h4
-                    class="font-semibold text-surface-900 dark:text-surface-100 truncate"
-                  >
-                    {{ item.name }}
-                  </h4>
-                  <p
-                    class="text-surface-600 dark:text-surface-400 text-sm mt-1"
-                  >
-                    ${{ item.price | number: "1.2-2" }}
-                  </p>
-                  <p class="text-primary font-semibold text-sm mt-1">
-                    ${{ getItemTotal(item) | number: "1.2-2" }}
-                  </p>
-                </div>
-                <!-- Quantity Controls -->
-                <!-- Remove Button -->
-              </div>
+            @for (item of cartItems; track $index) {
+              <app-cart-item [item]="item" />
             }
           </div>
         }

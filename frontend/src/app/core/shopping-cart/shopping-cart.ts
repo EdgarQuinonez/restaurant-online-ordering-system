@@ -7,10 +7,18 @@ import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { DrawerModule } from 'primeng/drawer';
 import { Drawer } from 'primeng/drawer';
+import { CartItem as CartItemComponent } from '@core/shopping-cart/cart-item/cart-item';
 
 @Component({
   selector: 'app-shopping-cart',
-  imports: [CurrencyPipe, DecimalPipe, ButtonModule, BadgeModule, DrawerModule],
+  imports: [
+    CurrencyPipe,
+    DecimalPipe,
+    ButtonModule,
+    BadgeModule,
+    DrawerModule,
+    CartItemComponent,
+  ],
   templateUrl: './shopping-cart.html',
   styleUrl: './shopping-cart.css',
 })
@@ -36,10 +44,6 @@ export class ShoppingCart {
   }
   closeCallback(e: any): void {
     this.drawerRef.close(e);
-  }
-
-  getItemTotal(item: CartItem): number {
-    return item.price * item.quantity;
   }
 
   ngOnDestroy() {

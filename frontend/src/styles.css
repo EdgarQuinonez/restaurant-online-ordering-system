@@ -23,17 +23,6 @@
 }
 
 @layer base {
-  h1,
-  h2,
-  h3,
-  span,
-  div,
-  a,
-  ul,
-  li,
-  ol {
-    @apply text-surface-700;
-  }
   h1 {
     @apply text-2xl font-bold text-center;
   }

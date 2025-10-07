@@ -2,14 +2,18 @@ import { Component, input, signal, computed, inject } from '@angular/core';
 import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
 import { MenuItem as MenuItemInterface } from '@core/menu/menu.service.interface';
 import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
+import { InputNumberModule, InputNumberInputEvent } from 'primeng/inputnumber';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-menu-item',
+  imports: [InputNumberModule, FormsModule],
   templateUrl: './menu-item.html',
 })
 export class MenuItem {
   private shoppingCartService = inject(ShoppingCartService);
 
+  cartItem: CartItem | undefined;
   // Input signals - updated to use MenuItem interface
   menuItem = input.required<MenuItemInterface>();
 
@@ -24,7 +28,7 @@ export class MenuItem {
 
   // Internal state
   selectedSizeId = signal<number | null>(null);
-  itemQuantity = signal<number>(0);
+  itemQuantity = 0;
 
   // Computed properties
   sortedSizes = computed(() => {
@@ -60,10 +64,31 @@ export class MenuItem {
     if (sortedSizes && sortedSizes.length > 0) {
       this.selectedSizeId.set(sortedSizes[0].id);
     }
+
+    // this.cartItem = this.shoppingCartService.getItem(
+    //   this.productId(),
+    //   this.selectedSize().name,
+    // );
+
+    // this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0;
+    this.shoppingCartService.cart$.subscribe(() => {
+      this.cartItem = this.shoppingCartService.getItem(
+        this.productId(),
+        this.selectedSize().name,
+      );
+      this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0; // the idea is to update itemQuantity (local banana binding to display on input number) with updates made on service so it syncs in both menu-item and cart-item
+    });
   }
 
   selectSize(sizeId: number): void {
     this.selectedSizeId.set(sizeId);
+
+    this.cartItem = this.shoppingCartService.getItem(
+      this.productId(),
+      this.selectedSize().name,
+    );
+
+    this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0;
   }
 
   // 1. Add menu item to cart based on productId and size
@@ -81,55 +106,26 @@ export class MenuItem {
     };
 
     this.shoppingCartService.addItem(cartItem);
-    this.itemQuantity.set(1);
   }
 
   // 3. Update menu item quantity in cart based on productId and size
-  updateQuantity(quantity: number): void {
-    const selectedSize = this.selectedSize();
-    if (!selectedSize) return;
-
-    if (
-      this.shoppingCartService.getItem(this.productId(), this.selectedSize.name)
-    ) {
-      this.shoppingCartService.updateItemQuantity(
-        this.productId(),
-        selectedSize.name,
-        quantity,
-      );
-
-      this.itemQuantity.set(quantity);
-    } else {
-      this.addToCart();
-    }
-  }
-
-  // Convenience methods for common operations
-  incrementQuantity(): void {
-    const cartItem = this.shoppingCartService.getItem(
+  public updateQuantity(e: InputNumberInputEvent) {
+    this.cartItem = this.shoppingCartService.getItem(
       this.productId(),
-      this.selectedSize.name,
+      this.selectedSize().name,
     );
+    const newQuantity = e.value;
 
-    if (cartItem) {
-      const newQuantity = cartItem.quantity + 1;
-      this.updateQuantity(newQuantity);
-    } else {
-      this.addToCart();
-    }
-  }
-
-  decrementQuantity(): void {
-    const cartItem = this.shoppingCartService.getItem(
-      this.productId(),
-      this.selectedSize.name,
-    );
-
-    if (cartItem) {
-      const newQuantity = cartItem.quantity - 1;
-      this.updateQuantity(newQuantity);
-    } else {
-      this.addToCart();
+    if (typeof newQuantity === 'number') {
+      if (this.cartItem) {
+        this.shoppingCartService.updateItemQuantity(
+          this.cartItem.productId,
+          this.cartItem.size,
+          newQuantity,
+        );
+      } else {
+        this.addToCart();
+      }
     }
   }
 }

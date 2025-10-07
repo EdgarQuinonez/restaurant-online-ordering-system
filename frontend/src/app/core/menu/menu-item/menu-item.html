@@ -19,25 +19,23 @@
       </span>
 
       <!-- Cart quantity controls -->
-      <div class="flex flex-col items-center">
-        <button
-          type="button"
-          class="border border-gray-200 rounded-lg w-8 h-8 p-1 hover:bg-gray-100 transition-colors"
-          (click)="decrementQuantity()"
-        >
-          -
-        </button>
-        <span class="w-8 h-8 p-1 text-center text-sm font-medium">
-          {{ itemQuantity() }}
-        </span>
-        <button
-          type="button"
-          class="border border-gray-200 rounded-lg w-8 h-8 p-1 hover:bg-gray-100 transition-colors"
-          (click)="incrementQuantity()"
-        >
-          +
-        </button>
-      </div>
+      <p-inputnumber
+        [(ngModel)]="itemQuantity"
+        (onInput)="updateQuantity($event)"
+        [min]="0"
+        [showButtons]="true"
+        buttonLayout="vertical"
+        spinnerMode="vertical"
+        inputId="vertical"
+        [inputStyle]="{ width: '3rem' }"
+      >
+        <ng-template #incrementbuttonicon>
+          <span class="pi pi-plus"></span>
+        </ng-template>
+        <ng-template #decrementbuttonicon>
+          <span class="pi pi-minus"></span>
+        </ng-template>
+      </p-inputnumber>
     </div>
   </div>
 
