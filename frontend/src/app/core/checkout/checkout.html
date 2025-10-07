@@ -1,0 +1,141 @@
+<div class="max-w-4xl mx-auto p-6 space-y-8">
+  <!-- Progress Stepper -->
+  <nav class="w-full">
+    <ul class="flex items-center justify-between relative">
+      @for (step of steps; track step; let i = $index) {
+        <li class="flex items-center z-10 bg-white">
+          <button
+            type="button"
+            class="flex flex-col items-center space-y-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-3 min-w-20"
+            [class]="{
+              'text-blue-600 scale-105': currentStep() === step,
+              'text-green-600':
+                completedSteps().includes(step) && currentStep() !== step,
+              'text-gray-400 cursor-not-allowed':
+                !completedSteps().includes(step) && currentStep() !== step,
+              'text-gray-600 hover:text-gray-800':
+                completedSteps().includes(step) && currentStep() !== step,
+            }"
+            (click)="goToStep(step)"
+            [disabled]="
+              !completedSteps().includes(step) && currentStep() !== step
+            "
+          >
+            <span
+              class="flex items-center justify-center w-8 h-8 rounded-full border-2 font-semibold text-sm transition-all"
+              [class]="{
+                'bg-blue-600 border-blue-600 text-white':
+                  currentStep() === step,
+                'bg-green-600 border-green-600 text-white':
+                  completedSteps().includes(step) && currentStep() !== step,
+                'border-gray-300 text-gray-400':
+                  !completedSteps().includes(step) && currentStep() !== step,
+                'border-gray-400 text-gray-600':
+                  completedSteps().includes(step) && currentStep() !== step,
+              }"
+            >
+              @if (completedSteps().includes(step) && currentStep() !== step) {
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              } @else {
+                {{ i + 1 }}
+              }
+            </span>
+            <span class="text-xs font-medium whitespace-nowrap">
+              {{ getStepLabel(step) }}
+            </span>
+          </button>
+          @if (i < steps.length - 1) {
+            <div
+              class="w-24 h-0.5 mx-2 transition-colors"
+              [class]="{
+                'bg-blue-600': completedSteps().includes(steps[i + 1]),
+                'bg-gray-300': !completedSteps().includes(steps[i + 1]),
+              }"
+            ></div>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- Step Content -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    @switch (currentStep()) {
+      <!-- Delivery Info Step -->
+      @case ("deliveryInfo") {
+        <app-delivery-info />
+      }
+
+      <!-- Order Summary Step -->
+      @case ("orderSummary") {
+        <app-order-summary />
+      }
+
+      <!-- Payment Step -->
+      @case ("payment") {
+        <app-payment />
+      }
+
+      <!-- Final Review Step -->
+      @case ("finalReview") {
+        <app-final-review />
+      }
+    }
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+    @if (currentStep() !== "deliveryInfo") {
+      <button
+        type="button"
+        class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        (click)="previousStep()"
+      >
+        Back
+      </button>
+    } @else {
+      <div></div>
+      <!-- Spacer to maintain flex layout -->
+    }
+
+    @if (currentStep() !== "finalReview") {
+      <button
+        type="button"
+        class="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+        (click)="nextStep()"
+        [disabled]="!canProceedToNextStep()"
+      >
+        Continue to {{ getNextStepLabel() }}
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="px-8 py-3 bg-green-600 text-white font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+        (click)="submitOrder()"
+        [disabled]="!finalReviewForm.valid"
+      >
+        Place Order - {{ orderSummaryForm.get("total")?.value | currency }}
+      </button>
+    }
+  </div>
+
+  <!-- Debug Info (Optional) -->
+  @if (false) {
+    <!-- Set to true for debugging -->
+    <div class="mt-8 p-4 bg-gray-100 rounded-lg border border-gray-300">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">Form State Debug</h3>
+      <pre class="text-sm bg-white p-4 rounded border overflow-auto">{{
+        formState() | json
+      }}</pre>
+      <p class="mt-2 text-sm text-gray-600">
+        Current Step Valid: {{ isStepValid(currentStep()) }}
+      </p>
+    </div>
+  }
+</div>

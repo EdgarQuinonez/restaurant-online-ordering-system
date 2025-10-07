@@ -1,4 +1,5 @@
 import { Component, inject, ViewChild } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ShoppingCartService } from './shopping-cart.service';
 import { CartItem } from './shopping-cart.interface';
@@ -18,6 +19,7 @@ import { CartItem as CartItemComponent } from '@core/shopping-cart/cart-item/car
     BadgeModule,
     DrawerModule,
     CartItemComponent,
+    RouterLink,
   ],
   templateUrl: './shopping-cart.html',
   styleUrl: './shopping-cart.css',

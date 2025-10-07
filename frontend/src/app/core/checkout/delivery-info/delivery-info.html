@@ -1,0 +1,168 @@
+<form [formGroup]="deliveryInfoForm" class="delivery-info-form">
+  <!-- Header Section -->
+  <div class="form-header">
+    <h1 class="form-title">Delivery Info</h1>
+    <p class="form-subtitle">Where and when should we deliver?</p>
+  </div>
+
+  <!-- Delivery Address Section -->
+  <section class="form-section">
+    <h2 class="section-header">Delivery Address</h2>
+
+    <!-- Address Input -->
+    <div class="input-group">
+      <label for="deliveryAddress" class="sr-only"
+        >Enter your full delivery address</label
+      >
+      <input
+        id="deliveryAddress"
+        type="text"
+        formControlName="deliveryAddress"
+        placeholder="Enter your full delivery address"
+        class="address-input"
+        [class]="{
+          'input-error':
+            deliveryInfoForm.get('deliveryAddress')?.touched &&
+            deliveryInfoForm.get('deliveryAddress')?.invalid,
+        }"
+      />
+      @if (
+        deliveryInfoForm.get("deliveryAddress")?.touched &&
+        deliveryInfoForm.get("deliveryAddress")?.hasError("required")
+      ) {
+        <span class="error-message">Delivery address is required</span>
+      }
+    </div>
+
+    <!-- Address Action Buttons -->
+    <div class="button-group">
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="useCurrentLocation()"
+      >
+        Use Current Location
+      </button>
+      <button type="button" class="btn-secondary" (click)="addNewAddress()">
+        Add New Address
+      </button>
+    </div>
+
+    <!-- Saved Addresses -->
+    @if (hasSavedAddresses()) {
+      <div class="saved-addresses">
+        <h3 class="saved-addresses-header">Saved Addresses</h3>
+        <div class="address-list">
+          @for (address of savedAddresses(); track address.id) {
+            <div
+              class="address-item"
+              [class]="{
+                'address-item-selected': isAddressSelected(address.id),
+              }"
+              (click)="selectAddress(address)"
+            >
+              <div class="address-details">
+                <p class="address-name">{{ address.name }}</p>
+                <p class="address-full">{{ address.fullAddress }}</p>
+              </div>
+              @if (isAddressSelected(address.id)) {
+                <div class="selected-indicator">✓</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Delivery Time Section -->
+  <section class="form-section">
+    <h2 class="section-header">Delivery Time</h2>
+
+    <!-- Time Options -->
+    <div class="time-options">
+      <label class="time-option">
+        <input
+          type="radio"
+          formControlName="deliveryTime"
+          value="asap"
+          class="radio-input"
+        />
+        <span class="radio-custom"></span>
+        <span class="time-option-label">ASAP (Approx. 35-45 min)</span>
+      </label>
+
+      <label class="time-option">
+        <input
+          type="radio"
+          formControlName="deliveryTime"
+          value="schedule"
+          class="radio-input"
+        />
+        <span class="radio-custom"></span>
+        <span class="time-option-label">Schedule for Later</span>
+      </label>
+    </div>
+
+    <!-- Date/Time Picker for Scheduled Delivery -->
+    @if (deliveryInfoForm.get("deliveryTime")?.value === "schedule") {
+      <div class="datetime-picker-group">
+        <label for="scheduledTime" class="datetime-label"
+          >Choose Date & Time</label
+        >
+        <input
+          id="scheduledTime"
+          type="datetime-local"
+          formControlName="scheduledTime"
+          class="datetime-input"
+          [min]="minScheduledDate()"
+        />
+        @if (
+          deliveryInfoForm.get("scheduledTime")?.touched &&
+          deliveryInfoForm.get("scheduledTime")?.invalid
+        ) {
+          <span class="error-message">Please select a valid date and time</span>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Special Instructions -->
+  <section class="form-section">
+    <h2 class="section-header">Special Instructions</h2>
+    <div class="input-group">
+      <label for="specialInstructions" class="sr-only"
+        >Add special instructions</label
+      >
+      <textarea
+        id="specialInstructions"
+        formControlName="specialInstructions"
+        placeholder="E.g., Leave at door, Ring bell, etc."
+        class="instructions-textarea"
+        rows="3"
+      ></textarea>
+    </div>
+  </section>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="onContinue()"
+      [disabled]="!deliveryInfoForm.valid"
+      [class]="{ 'btn-disabled': !deliveryInfoForm.valid }"
+    >
+      Continue to Order Summary
+    </button>
+  </div>
+
+  <!-- Form State Debug (Remove in production) -->
+  @if (showDebug()) {
+    <div class="debug-info">
+      <h3>Form State</h3>
+      <pre>{{ deliveryInfoForm.value | json }}</pre>
+      <p>Valid: {{ deliveryInfoForm.valid }}</p>
+    </div>
+  }
+</form>
