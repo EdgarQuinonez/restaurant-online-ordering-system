@@ -1,168 +1,221 @@
 <form [formGroup]="deliveryInfoForm" class="delivery-info-form">
   <!-- Header Section -->
   <div class="form-header">
-    <h1 class="form-title">Delivery Info</h1>
-    <p class="form-subtitle">Where and when should we deliver?</p>
+    <h1 class="form-title">Información de Entrega</h1>
+    <p class="form-subtitle">¿Dónde y cuándo debemos entregar?</p>
   </div>
 
-  <!-- Delivery Address Section -->
+  <!-- Customer Information Section -->
   <section class="form-section">
-    <h2 class="section-header">Delivery Address</h2>
+    <h2 class="section-header">Información del Cliente</h2>
 
-    <!-- Address Input -->
+    <!-- Customer Name -->
     <div class="input-group">
-      <label for="deliveryAddress" class="sr-only"
-        >Enter your full delivery address</label
-      >
-      <input
-        id="deliveryAddress"
-        type="text"
-        formControlName="deliveryAddress"
-        placeholder="Enter your full delivery address"
-        class="address-input"
-        [class]="{
-          'input-error':
-            deliveryInfoForm.get('deliveryAddress')?.touched &&
-            deliveryInfoForm.get('deliveryAddress')?.invalid,
-        }"
-      />
+      <p-iftalabel>
+        <input
+          pInputText
+          id="customerName"
+          formControlName="customerName"
+          placeholder="Ingresa tu nombre completo"
+          [class]="{
+            'input-error':
+              deliveryInfoForm.get('customerName')?.touched &&
+              deliveryInfoForm.get('customerName')?.invalid,
+          }"
+        />
+        <label for="customerName">Nombre Completo</label>
+      </p-iftalabel>
       @if (
-        deliveryInfoForm.get("deliveryAddress")?.touched &&
-        deliveryInfoForm.get("deliveryAddress")?.hasError("required")
+        deliveryInfoForm.get("customerName")?.touched &&
+        deliveryInfoForm.get("customerName")?.hasError("required")
       ) {
-        <span class="error-message">Delivery address is required</span>
+        <span class="error-message">El nombre es requerido</span>
+      }
+      @if (
+        deliveryInfoForm.get("customerName")?.touched &&
+        deliveryInfoForm.get("customerName")?.hasError("minlength")
+      ) {
+        <span class="error-message"
+          >El nombre debe tener al menos 2 caracteres</span
+        >
       }
     </div>
 
-    <!-- Address Action Buttons -->
-    <div class="button-group">
-      <button
-        type="button"
-        class="btn-secondary"
-        (click)="useCurrentLocation()"
-      >
-        Use Current Location
-      </button>
-      <button type="button" class="btn-secondary" (click)="addNewAddress()">
-        Add New Address
-      </button>
+    <!-- Customer Phone -->
+    <div class="input-group">
+      <p-iftalabel>
+        <input
+          pInputText
+          id="customerPhone"
+          formControlName="customerPhone"
+          placeholder="Ingresa tu número de teléfono"
+          [class]="{
+            'input-error':
+              deliveryInfoForm.get('customerPhone')?.touched &&
+              deliveryInfoForm.get('customerPhone')?.invalid,
+          }"
+        />
+        <label for="customerPhone">Teléfono</label>
+      </p-iftalabel>
+      @if (
+        deliveryInfoForm.get("customerPhone")?.touched &&
+        deliveryInfoForm.get("customerPhone")?.hasError("required")
+      ) {
+        <span class="error-message">El teléfono es requerido</span>
+      }
+      @if (
+        deliveryInfoForm.get("customerPhone")?.touched &&
+        deliveryInfoForm.get("customerPhone")?.hasError("pattern")
+      ) {
+        <span class="error-message"
+          >Por favor ingresa un número de teléfono válido</span
+        >
+      }
     </div>
 
-    <!-- Saved Addresses -->
-    @if (hasSavedAddresses()) {
-      <div class="saved-addresses">
-        <h3 class="saved-addresses-header">Saved Addresses</h3>
-        <div class="address-list">
-          @for (address of savedAddresses(); track address.id) {
-            <div
-              class="address-item"
-              [class]="{
-                'address-item-selected': isAddressSelected(address.id),
-              }"
-              (click)="selectAddress(address)"
-            >
-              <div class="address-details">
-                <p class="address-name">{{ address.name }}</p>
-                <p class="address-full">{{ address.fullAddress }}</p>
-              </div>
-              @if (isAddressSelected(address.id)) {
-                <div class="selected-indicator">✓</div>
-              }
-            </div>
-          }
-        </div>
-      </div>
-    }
+    <!-- Customer Email -->
+    <div class="input-group">
+      <p-iftalabel>
+        <input
+          pInputText
+          id="customerEmail"
+          formControlName="customerEmail"
+          placeholder="Ingresa tu correo electrónico (opcional)"
+          [class]="{
+            'input-error':
+              deliveryInfoForm.get('customerEmail')?.touched &&
+              deliveryInfoForm.get('customerEmail')?.invalid,
+          }"
+        />
+        <label for="customerEmail">Correo Electrónico</label>
+      </p-iftalabel>
+      @if (
+        deliveryInfoForm.get("customerEmail")?.touched &&
+        deliveryInfoForm.get("customerEmail")?.hasError("email")
+      ) {
+        <span class="error-message"
+          >Por favor ingresa un correo electrónico válido</span
+        >
+      }
+    </div>
   </section>
 
-  <!-- Delivery Time Section -->
+  <!-- Delivery Address Section -->
   <section class="form-section">
-    <h2 class="section-header">Delivery Time</h2>
+    <h2 class="section-header">Dirección de Entrega</h2>
 
-    <!-- Time Options -->
-    <div class="time-options">
-      <label class="time-option">
+    <!-- Address Line 1 -->
+    <div class="input-group">
+      <p-iftalabel>
         <input
-          type="radio"
-          formControlName="deliveryTime"
-          value="asap"
-          class="radio-input"
+          pInputText
+          id="addressLine1"
+          formControlName="addressLine1"
+          placeholder="Calle, Avenida, Boulevard, etc."
+          [class]="{
+            'input-error':
+              deliveryInfoForm.get('addressLine1')?.touched &&
+              deliveryInfoForm.get('addressLine1')?.invalid,
+          }"
         />
-        <span class="radio-custom"></span>
-        <span class="time-option-label">ASAP (Approx. 35-45 min)</span>
-      </label>
-
-      <label class="time-option">
-        <input
-          type="radio"
-          formControlName="deliveryTime"
-          value="schedule"
-          class="radio-input"
-        />
-        <span class="radio-custom"></span>
-        <span class="time-option-label">Schedule for Later</span>
-      </label>
+        <label for="addressLine1">Calle</label>
+      </p-iftalabel>
+      @if (
+        deliveryInfoForm.get("addressLine1")?.touched &&
+        deliveryInfoForm.get("addressLine1")?.hasError("required")
+      ) {
+        <span class="error-message">La dirección principal es requerida</span>
+      }
+      @if (
+        deliveryInfoForm.get("addressLine1")?.touched &&
+        deliveryInfoForm.get("addressLine1")?.hasError("minlength")
+      ) {
+        <span class="error-message"
+          >La dirección debe tener al menos 5 caracteres</span
+        >
+      }
     </div>
 
-    <!-- Date/Time Picker for Scheduled Delivery -->
-    @if (deliveryInfoForm.get("deliveryTime")?.value === "schedule") {
-      <div class="datetime-picker-group">
-        <label for="scheduledTime" class="datetime-label"
-          >Choose Date & Time</label
-        >
+    <!-- Address Line 2 -->
+    <div class="input-group">
+      <p-iftalabel>
         <input
-          id="scheduledTime"
-          type="datetime-local"
-          formControlName="scheduledTime"
-          class="datetime-input"
-          [min]="minScheduledDate()"
+          pInputText
+          id="addressLine2"
+          formControlName="addressLine2"
+          placeholder="Colonia, Sector, etc."
         />
+        <label for="addressLine2">Colonia</label>
+      </p-iftalabel>
+    </div>
+
+    <!-- Number Fields -->
+    <div class="number-fields">
+      <!-- Exterior Number -->
+      <div class="input-group">
+        <p-iftalabel>
+          <input
+            pInputText
+            id="noExterior"
+            formControlName="noExterior"
+            placeholder="Número exterior"
+            [class]="{
+              'input-error':
+                deliveryInfoForm.get('noExterior')?.touched &&
+                deliveryInfoForm.get('noExterior')?.invalid,
+            }"
+          />
+          <label for="noExterior">Número Exterior</label>
+        </p-iftalabel>
         @if (
-          deliveryInfoForm.get("scheduledTime")?.touched &&
-          deliveryInfoForm.get("scheduledTime")?.invalid
+          deliveryInfoForm.get("noExterior")?.touched &&
+          deliveryInfoForm.get("noExterior")?.hasError("required")
         ) {
-          <span class="error-message">Please select a valid date and time</span>
+          <span class="error-message">El número exterior es requerido</span>
         }
       </div>
-    }
+
+      <!-- Interior Number -->
+      <div class="input-group">
+        <p-iftalabel>
+          <input
+            pInputText
+            id="noInterior"
+            formControlName="noInterior"
+            placeholder="Número interior (opcional)"
+          />
+          <label for="noInterior">Número Interior</label>
+        </p-iftalabel>
+      </div>
+    </div>
   </section>
 
   <!-- Special Instructions -->
   <section class="form-section">
-    <h2 class="section-header">Special Instructions</h2>
+    <h2 class="section-header">Instrucciones Especiales</h2>
     <div class="input-group">
-      <label for="specialInstructions" class="sr-only"
-        >Add special instructions</label
-      >
-      <textarea
-        id="specialInstructions"
-        formControlName="specialInstructions"
-        placeholder="E.g., Leave at door, Ring bell, etc."
-        class="instructions-textarea"
-        rows="3"
-      ></textarea>
+      <p-iftalabel>
+        <textarea
+          pInputText
+          id="specialInstructions"
+          formControlName="specialInstructions"
+          placeholder="Ej. Dejar en la puerta, Tocar timbre, etc."
+          rows="3"
+          class="instructions-textarea"
+        ></textarea>
+        <label for="specialInstructions">Instrucciones Especiales</label>
+      </p-iftalabel>
     </div>
   </section>
 
   <!-- Action Buttons -->
   <div class="action-buttons">
-    <button
-      type="button"
-      class="btn-primary"
-      (click)="onContinue()"
+    <p-button
+      label="Continuar al Resumen del Pedido"
+      (onClick)="onContinue()"
       [disabled]="!deliveryInfoForm.valid"
+      styleClass="btn-primary"
       [class]="{ 'btn-disabled': !deliveryInfoForm.valid }"
-    >
-      Continue to Order Summary
-    </button>
+    />
   </div>
-
-  <!-- Form State Debug (Remove in production) -->
-  @if (showDebug()) {
-    <div class="debug-info">
-      <h3>Form State</h3>
-      <pre>{{ deliveryInfoForm.value | json }}</pre>
-      <p>Valid: {{ deliveryInfoForm.valid }}</p>
-    </div>
-  }
 </form>

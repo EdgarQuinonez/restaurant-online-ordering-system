@@ -1,13 +1,6 @@
 import { Component, signal, computed, inject } from '@angular/core';
 
-import {
-  CheckoutStep,
-  CheckoutFormState,
-  DeliveryInfoStep,
-  OrderSummaryStep,
-  PaymentStep,
-  FinalReviewStep,
-} from './checkout.interface';
+import { CheckoutStep } from './checkout.interface';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -46,7 +39,7 @@ export class Checkout {
   readonly completedSteps = signal<CheckoutStep[]>([]);
 
   // Reactive form state
-  readonly formState = computed<CheckoutFormState>(() => ({
+  readonly formState = computed(() => ({
     currentStep: this.currentStep(),
     completedSteps: this.completedSteps(),
     data: {
