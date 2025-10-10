@@ -1,28 +1,35 @@
 import { Component, signal, computed, inject } from '@angular/core';
-
-import { CheckoutStep } from './checkout.interface';
 import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { CurrencyPipe, JsonPipe, NgClass } from '@angular/common';
+
+// PrimeNG imports
+import { StepperModule } from 'primeng/stepper';
+import { ButtonModule } from 'primeng/button';
+
+import { CheckoutStep } from './checkout.interface';
 import { DeliveryInfo } from './delivery-info/delivery-info';
 import { OrderSummary } from './order-summary/order-summary';
 import { Payment } from './payment/payment';
 import { FinalReview } from './final-review/final-review';
-import { CurrencyPipe, JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-checkout',
   imports: [
     ReactiveFormsModule,
+    StepperModule,
+    ButtonModule,
     DeliveryInfo,
     OrderSummary,
     Payment,
     FinalReview,
     CurrencyPipe,
     JsonPipe,
+    NgClass,
   ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
@@ -34,21 +41,8 @@ export class Checkout {
   paymentForm!: FormGroup;
   finalReviewForm!: FormGroup;
 
-  // State management using signals
-  readonly currentStep = signal<CheckoutStep>('deliveryInfo');
-  readonly completedSteps = signal<CheckoutStep[]>([]);
-
-  // Reactive form state
-  readonly formState = computed(() => ({
-    currentStep: this.currentStep(),
-    completedSteps: this.completedSteps(),
-    data: {
-      deliveryInfo: this.deliveryInfoForm?.value,
-      orderSummary: this.orderSummaryForm?.value,
-      payment: this.paymentForm?.value,
-      finalReview: this.finalReviewForm?.value,
-    },
-  }));
+  // Stepper state - using 0-based index for PrimeNG stepper
+  readonly currentStepIndex = signal<number>(0);
 
   // Step configuration
   readonly steps: CheckoutStep[] = [
@@ -58,6 +52,13 @@ export class Checkout {
     'finalReview',
   ];
 
+  // Computed order data for final review
+  readonly orderData = computed(() => ({
+    deliveryInfo: this.deliveryInfoForm?.value,
+    orderSummary: this.orderSummaryForm?.value,
+    payment: this.paymentForm?.value,
+  }));
+
   private fb = inject(FormBuilder);
 
   ngOnInit(): void {
@@ -66,30 +67,26 @@ export class Checkout {
     this.orderSummaryForm = this.createOrderSummaryForm();
     this.paymentForm = this.createPaymentForm();
     this.finalReviewForm = this.createFinalReviewForm();
-    // Subscribe to form value changes for reactive updates
-    this.deliveryInfoForm.valueChanges.subscribe((value) => {
-      console.log('Delivery info updated:', value);
-    });
-
-    this.orderSummaryForm.valueChanges.subscribe((value) => {
-      console.log('Order summary updated:', value);
-    });
-
-    this.paymentForm.valueChanges.subscribe((value) => {
-      console.log('Payment info updated:', value);
-    });
-
-    this.finalReviewForm.valueChanges.subscribe((value) => {
-      console.log('Final review updated:', value);
-    });
   }
 
   // Form creation methods
   private createDeliveryInfoForm(): FormGroup {
     return this.fb.group({
-      deliveryAddress: ['', [Validators.required]],
-      deliveryTime: ['asap', [Validators.required]],
-      scheduledTime: [null],
+      customerName: ['', [Validators.required, Validators.minLength(2)]],
+      customerPhone: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(
+            /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
+          ),
+        ],
+      ],
+      customerEmail: ['', [Validators.email]],
+      addressLine1: ['', [Validators.required, Validators.minLength(5)]],
+      addressLine2: [''],
+      noExterior: ['', [Validators.required]],
+      noInterior: [''],
       specialInstructions: [''],
     });
   }
@@ -97,7 +94,6 @@ export class Checkout {
   private createOrderSummaryForm(): FormGroup {
     return this.fb.group({
       items: this.fb.array([]),
-      // promoCode: [''],
       subtotal: [0, [Validators.required, Validators.min(0)]],
       deliveryFee: [0, [Validators.required, Validators.min(0)]],
       serviceFee: [0, [Validators.required, Validators.min(0)]],
@@ -125,69 +121,78 @@ export class Checkout {
     });
   }
 
-  // Step navigation methods
-  nextStep(): void {
-    const currentIndex = this.steps.indexOf(this.currentStep());
-    if (currentIndex < this.steps.length - 1) {
-      const nextStep = this.steps[currentIndex + 1];
-      this.currentStep.set(nextStep);
+  // Navigation helper methods
+  canNavigateToStep(stepIndex: number): boolean {
+    // Allow navigation to current step or any completed step
+    if (stepIndex <= this.currentStepIndex()) {
+      return true;
+    }
 
-      // Add current step to completed steps if not already there
-      if (!this.completedSteps().includes(this.currentStep())) {
-        this.completedSteps.update((steps) => [...steps, this.currentStep()]);
+    // For future steps, check if all previous steps are valid
+    for (let i = 0; i < stepIndex; i++) {
+      if (!this.isStepValid(this.steps[i])) {
+        return false;
       }
     }
-  }
-
-  previousStep(): void {
-    const currentIndex = this.steps.indexOf(this.currentStep());
-    if (currentIndex > 0) {
-      const previousStep = this.steps[currentIndex - 1];
-      this.currentStep.set(previousStep);
-    }
-  }
-
-  goToStep(step: CheckoutStep): void {
-    // Only allow navigation to completed steps or the immediate next step
-    const stepIndex = this.steps.indexOf(step);
-    const currentIndex = this.steps.indexOf(this.currentStep());
-
-    if (
-      this.completedSteps().includes(step) ||
-      stepIndex === currentIndex + 1
-    ) {
-      this.currentStep.set(step);
-    }
+    return true;
   }
 
   // Form validation methods
   isStepValid(step: CheckoutStep): boolean {
     switch (step) {
       case 'deliveryInfo':
-        return this.deliveryInfoForm.valid;
+        return this.deliveryInfoForm?.valid ?? false;
       case 'orderSummary':
-        return this.orderSummaryForm.valid;
+        return this.orderSummaryForm?.valid ?? false;
       case 'payment':
-        return this.paymentForm.valid;
+        return this.paymentForm?.valid ?? false;
       case 'finalReview':
-        return this.finalReviewForm.valid;
+        return this.finalReviewForm?.valid ?? false;
       default:
         return false;
     }
   }
 
-  // Form submission
+  // Event handlers for child components
+  onDeliveryInfoSubmit(deliveryData: any): void {
+    console.log('Delivery info submitted:', deliveryData);
+    // You can process the delivery data here if needed
+  }
+
+  onPaymentComplete(paymentData: any): void {
+    console.log('Payment completed:', paymentData);
+    // You can process the payment data here if needed
+  }
+
+  // Order submission
   submitOrder(): void {
-    if (this.isStepValid('finalReview')) {
-      const orderData = this.formState().data;
+    if (this.finalReviewForm.valid) {
+      const orderData = this.orderData();
       console.log('Submitting order:', orderData);
 
       // Here you would typically call your order service
       // this.orderService.submitOrder(orderData).subscribe(...);
 
-      // Mark all steps as completed
-      this.completedSteps.set([...this.steps]);
+      // Reset forms or navigate to confirmation page
+      this.resetForms();
     }
+  }
+
+  canSubmitOrder(): boolean {
+    return (
+      this.finalReviewForm?.valid &&
+      this.deliveryInfoForm?.valid &&
+      this.orderSummaryForm?.valid &&
+      this.paymentForm?.valid
+    );
+  }
+
+  private resetForms(): void {
+    this.deliveryInfoForm.reset();
+    this.orderSummaryForm.reset();
+    this.paymentForm.reset();
+    this.finalReviewForm.reset();
+    this.currentStepIndex.set(0);
   }
 
   // Getters for template convenience
@@ -205,53 +210,5 @@ export class Checkout {
 
   get finalReviewFormData() {
     return this.finalReviewForm.value;
-  }
-
-  // Check if we can proceed to next step
-  canProceedToNextStep(): boolean {
-    return this.isStepValid(this.currentStep());
-  }
-
-  // Get current form group for the active step
-  getCurrentFormGroup(): FormGroup {
-    switch (this.currentStep()) {
-      case 'deliveryInfo':
-        return this.deliveryInfoForm;
-      case 'orderSummary':
-        return this.orderSummaryForm;
-      case 'payment':
-        return this.paymentForm;
-      case 'finalReview':
-        return this.finalReviewForm;
-      default:
-        return this.deliveryInfoForm;
-    }
-  }
-  getStepLabel(step: CheckoutStep): string {
-    const labels: Record<CheckoutStep, string> = {
-      deliveryInfo: 'Delivery',
-      orderSummary: 'Order',
-      payment: 'Payment',
-      finalReview: 'Review',
-      postSubmission: 'Confirmación',
-    };
-    return labels[step];
-  }
-
-  getNextStepLabel(): string {
-    const currentIndex = this.steps.indexOf(this.currentStep());
-    if (currentIndex < this.steps.length - 1) {
-      return this.getStepLabel(this.steps[currentIndex + 1]);
-    }
-    return 'Complete';
-  }
-
-  getPaymentMethodLabel(method: string): string {
-    const labels: Record<string, string> = {
-      credit_card: 'Credit/Debit Card',
-      digital_wallet: 'Digital Wallet',
-      cash: 'Cash on Delivery',
-    };
-    return labels[method] || method;
   }
 }

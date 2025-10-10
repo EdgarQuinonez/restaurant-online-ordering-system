@@ -20,6 +20,9 @@
   --color-secondary: #931c25;
   --color-secondary-200: #a84747;
   --color-accent: #f8ce8f;
+
+  --color-invalid: var(--p-iftalabel-invalid-color);
+  --color-focus: var(--p-iftalabel-focus-color);
 }
 
 @layer base {

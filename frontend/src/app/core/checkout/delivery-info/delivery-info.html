@@ -1,221 +1,259 @@
-<form [formGroup]="deliveryInfoForm" class="delivery-info-form">
+<form [formGroup]="deliveryInfoForm">
   <!-- Header Section -->
-  <div class="form-header">
-    <h1 class="form-title">Información de Entrega</h1>
-    <p class="form-subtitle">¿Dónde y cuándo debemos entregar?</p>
+  <div class="text-center mb-6 sm:mb-8">
+    <h1 class="text-2xl md:text-4xl font-bold text-surface-800 mb-2">
+      Información de Entrega
+    </h1>
   </div>
 
   <!-- Customer Information Section -->
-  <section class="form-section">
-    <h2 class="section-header">Información del Cliente</h2>
+  <section class="mb-6 sm:mb-8">
+    <h2
+      class="text-lg font-semibold text-surface-800 mb-4 sm:mb-6 pb-2 border-b border-surface-200"
+    >
+      Información del Cliente
+    </h2>
 
-    <!-- Customer Name -->
-    <div class="input-group">
-      <p-iftalabel>
-        <input
-          pInputText
-          id="customerName"
-          formControlName="customerName"
-          placeholder="Ingresa tu nombre completo"
-          [class]="{
-            'input-error':
+    <div class="space-y-4">
+      <!-- Customer Name -->
+      <div class="w-full">
+        <p-iftalabel class="block">
+          <input
+            pInputText
+            id="customerName"
+            formControlName="customerName"
+            placeholder="Ingresa tu nombre completo"
+            [invalid]="
               deliveryInfoForm.get('customerName')?.touched &&
-              deliveryInfoForm.get('customerName')?.invalid,
-          }"
-        />
-        <label for="customerName">Nombre Completo</label>
-      </p-iftalabel>
-      @if (
-        deliveryInfoForm.get("customerName")?.touched &&
-        deliveryInfoForm.get("customerName")?.hasError("required")
-      ) {
-        <span class="error-message">El nombre es requerido</span>
-      }
-      @if (
-        deliveryInfoForm.get("customerName")?.touched &&
-        deliveryInfoForm.get("customerName")?.hasError("minlength")
-      ) {
-        <span class="error-message"
-          >El nombre debe tener al menos 2 caracteres</span
-        >
-      }
-    </div>
+              deliveryInfoForm.get('customerName')?.invalid
+            "
+            class="w-full"
+          />
+          <label for="customerName" class="text-surface-700"
+            >Nombre Completo</label
+          >
+        </p-iftalabel>
+        @if (
+          deliveryInfoForm.get("customerName")?.touched &&
+          deliveryInfoForm.get("customerName")?.hasError("required")
+        ) {
+          <span class="text-sm text-invalid mt-1 block"
+            >El nombre es requerido</span
+          >
+        }
+        @if (
+          deliveryInfoForm.get("customerName")?.touched &&
+          deliveryInfoForm.get("customerName")?.hasError("minlength")
+        ) {
+          <span class="text-sm text-invalid mt-1 block"
+            >El nombre debe tener al menos 2 caracteres</span
+          >
+        }
+      </div>
 
-    <!-- Customer Phone -->
-    <div class="input-group">
-      <p-iftalabel>
-        <input
-          pInputText
-          id="customerPhone"
-          formControlName="customerPhone"
-          placeholder="Ingresa tu número de teléfono"
-          [class]="{
-            'input-error':
+      <!-- Customer Phone -->
+      <div class="w-full">
+        <p-iftalabel class="block">
+          <input
+            pInputText
+            id="customerPhone"
+            formControlName="customerPhone"
+            placeholder="Ingresa tu número de teléfono"
+            [invalid]="
               deliveryInfoForm.get('customerPhone')?.touched &&
-              deliveryInfoForm.get('customerPhone')?.invalid,
-          }"
-        />
-        <label for="customerPhone">Teléfono</label>
-      </p-iftalabel>
-      @if (
-        deliveryInfoForm.get("customerPhone")?.touched &&
-        deliveryInfoForm.get("customerPhone")?.hasError("required")
-      ) {
-        <span class="error-message">El teléfono es requerido</span>
-      }
-      @if (
-        deliveryInfoForm.get("customerPhone")?.touched &&
-        deliveryInfoForm.get("customerPhone")?.hasError("pattern")
-      ) {
-        <span class="error-message"
-          >Por favor ingresa un número de teléfono válido</span
-        >
-      }
-    </div>
+              deliveryInfoForm.get('customerPhone')?.invalid
+            "
+            class="w-full"
+          />
+          <label for="customerPhone" class="text-surface-700">Teléfono</label>
+        </p-iftalabel>
+        @if (
+          deliveryInfoForm.get("customerPhone")?.touched &&
+          deliveryInfoForm.get("customerPhone")?.hasError("required")
+        ) {
+          <span class="text-sm text-invalid mt-1 block"
+            >El teléfono es requerido</span
+          >
+        }
+        @if (
+          deliveryInfoForm.get("customerPhone")?.touched &&
+          deliveryInfoForm.get("customerPhone")?.hasError("pattern")
+        ) {
+          <span class="text-sm text-invalid mt-1 block"
+            >Por favor ingresa un número de teléfono válido</span
+          >
+        }
+      </div>
 
-    <!-- Customer Email -->
-    <div class="input-group">
-      <p-iftalabel>
-        <input
-          pInputText
-          id="customerEmail"
-          formControlName="customerEmail"
-          placeholder="Ingresa tu correo electrónico (opcional)"
-          [class]="{
-            'input-error':
+      <!-- Customer Email -->
+      <div class="w-full">
+        <p-iftalabel class="block">
+          <input
+            pInputText
+            id="customerEmail"
+            formControlName="customerEmail"
+            placeholder="Ingresa tu correo electrónico (opcional)"
+            [invalid]="
               deliveryInfoForm.get('customerEmail')?.touched &&
-              deliveryInfoForm.get('customerEmail')?.invalid,
-          }"
-        />
-        <label for="customerEmail">Correo Electrónico</label>
-      </p-iftalabel>
-      @if (
-        deliveryInfoForm.get("customerEmail")?.touched &&
-        deliveryInfoForm.get("customerEmail")?.hasError("email")
-      ) {
-        <span class="error-message"
-          >Por favor ingresa un correo electrónico válido</span
-        >
-      }
+              deliveryInfoForm.get('customerEmail')?.invalid
+            "
+            class="w-full"
+          />
+          <label for="customerEmail" class="text-surface-700"
+            >Correo Electrónico</label
+          >
+        </p-iftalabel>
+        @if (
+          deliveryInfoForm.get("customerEmail")?.touched &&
+          deliveryInfoForm.get("customerEmail")?.hasError("email")
+        ) {
+          <span class="text-sm text-invalid mt-1 block"
+            >Por favor ingresa un correo electrónico válido</span
+          >
+        }
+      </div>
     </div>
   </section>
 
   <!-- Delivery Address Section -->
-  <section class="form-section">
-    <h2 class="section-header">Dirección de Entrega</h2>
+  <section class="mb-6 sm:mb-8">
+    <h2
+      class="text-lg sm:text-xl font-semibold text-surface-800 mb-4 sm:mb-6 pb-2 border-b border-surface-200"
+    >
+      Dirección de Entrega
+    </h2>
 
-    <!-- Address Line 1 -->
-    <div class="input-group">
-      <p-iftalabel>
-        <input
-          pInputText
-          id="addressLine1"
-          formControlName="addressLine1"
-          placeholder="Calle, Avenida, Boulevard, etc."
-          [class]="{
-            'input-error':
-              deliveryInfoForm.get('addressLine1')?.touched &&
-              deliveryInfoForm.get('addressLine1')?.invalid,
-          }"
-        />
-        <label for="addressLine1">Calle</label>
-      </p-iftalabel>
-      @if (
-        deliveryInfoForm.get("addressLine1")?.touched &&
-        deliveryInfoForm.get("addressLine1")?.hasError("required")
-      ) {
-        <span class="error-message">La dirección principal es requerida</span>
-      }
-      @if (
-        deliveryInfoForm.get("addressLine1")?.touched &&
-        deliveryInfoForm.get("addressLine1")?.hasError("minlength")
-      ) {
-        <span class="error-message"
-          >La dirección debe tener al menos 5 caracteres</span
-        >
-      }
-    </div>
-
-    <!-- Address Line 2 -->
-    <div class="input-group">
-      <p-iftalabel>
-        <input
-          pInputText
-          id="addressLine2"
-          formControlName="addressLine2"
-          placeholder="Colonia, Sector, etc."
-        />
-        <label for="addressLine2">Colonia</label>
-      </p-iftalabel>
-    </div>
-
-    <!-- Number Fields -->
-    <div class="number-fields">
-      <!-- Exterior Number -->
-      <div class="input-group">
-        <p-iftalabel>
+    <div class="space-y-4">
+      <!-- Address Line 1 -->
+      <div class="w-full">
+        <p-iftalabel class="block">
           <input
             pInputText
-            id="noExterior"
-            formControlName="noExterior"
-            placeholder="Número exterior"
-            [class]="{
-              'input-error':
-                deliveryInfoForm.get('noExterior')?.touched &&
-                deliveryInfoForm.get('noExterior')?.invalid,
-            }"
+            id="addressLine1"
+            formControlName="addressLine1"
+            placeholder="Calle, Avenida, Boulevard, etc."
+            [invalid]="
+              deliveryInfoForm.get('addressLine1')?.touched &&
+              deliveryInfoForm.get('addressLine1')?.invalid
+            "
+            class="w-full"
           />
-          <label for="noExterior">Número Exterior</label>
+          <label for="addressLine1" class="text-surface-700">Calle</label>
         </p-iftalabel>
         @if (
-          deliveryInfoForm.get("noExterior")?.touched &&
-          deliveryInfoForm.get("noExterior")?.hasError("required")
+          deliveryInfoForm.get("addressLine1")?.touched &&
+          deliveryInfoForm.get("addressLine1")?.hasError("required")
         ) {
-          <span class="error-message">El número exterior es requerido</span>
+          <span class="text-sm text-invalid mt-1 block"
+            >La dirección principal es requerida</span
+          >
+        }
+        @if (
+          deliveryInfoForm.get("addressLine1")?.touched &&
+          deliveryInfoForm.get("addressLine1")?.hasError("minlength")
+        ) {
+          <span class="text-sm text-invalid mt-1 block"
+            >La dirección debe tener al menos 5 caracteres</span
+          >
         }
       </div>
 
-      <!-- Interior Number -->
-      <div class="input-group">
-        <p-iftalabel>
+      <!-- Address Line 2 -->
+      <div class="w-full">
+        <p-iftalabel class="block">
           <input
             pInputText
-            id="noInterior"
-            formControlName="noInterior"
-            placeholder="Número interior (opcional)"
+            id="addressLine2"
+            formControlName="addressLine2"
+            placeholder="Colonia, Sector, etc."
+            class="w-full"
           />
-          <label for="noInterior">Número Interior</label>
+          <label for="addressLine2" class="text-surface-700">Colonia</label>
         </p-iftalabel>
+      </div>
+
+      <!-- Number Fields -->
+      <div class="grid grid-cols-1 gap-4">
+        <!-- Exterior Number -->
+        <div class="w-full">
+          <p-iftalabel class="block">
+            <input
+              pInputText
+              id="noExterior"
+              formControlName="noExterior"
+              placeholder="Número exterior"
+              [invalid]="
+                deliveryInfoForm.get('noExterior')?.touched &&
+                deliveryInfoForm.get('noExterior')?.invalid
+              "
+              class="w-full"
+            />
+            <label for="noExterior" class="text-surface-700"
+              >Número Exterior</label
+            >
+          </p-iftalabel>
+          @if (
+            deliveryInfoForm.get("noExterior")?.touched &&
+            deliveryInfoForm.get("noExterior")?.hasError("required")
+          ) {
+            <span class="text-sm text-invalid mt-1 block"
+              >El número exterior es requerido</span
+            >
+          }
+        </div>
+
+        <!-- Interior Number -->
+        <div class="w-full">
+          <p-iftalabel class="block">
+            <input
+              pInputText
+              id="noInterior"
+              formControlName="noInterior"
+              placeholder="Número interior (opcional)"
+              class="w-full"
+            />
+            <label for="noInterior" class="text-surface-700"
+              >Número Interior</label
+            >
+          </p-iftalabel>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Special Instructions -->
-  <section class="form-section">
-    <h2 class="section-header">Instrucciones Especiales</h2>
-    <div class="input-group">
-      <p-iftalabel>
+  <section class="mb-6">
+    <h2
+      class="text-lg font-semibold text-surface-800 mb-4 pb-2 border-b border-surface-200"
+    >
+      Instrucciones Especiales
+    </h2>
+
+    <div class="w-full">
+      <p-iftalabel class="block">
         <textarea
           pInputText
           id="specialInstructions"
           formControlName="specialInstructions"
           placeholder="Ej. Dejar en la puerta, Tocar timbre, etc."
           rows="3"
-          class="instructions-textarea"
+          class="w-full resize-vertical min-h-[80px]"
         ></textarea>
-        <label for="specialInstructions">Instrucciones Especiales</label>
+        <label for="specialInstructions" class="text-surface-700"
+          >Instrucciones Especiales</label
+        >
       </p-iftalabel>
     </div>
   </section>
 
   <!-- Action Buttons -->
-  <div class="action-buttons">
+  <div class="flex justify-center mt-8">
     <p-button
       label="Continuar al Resumen del Pedido"
       (onClick)="onContinue()"
       [disabled]="!deliveryInfoForm.valid"
-      styleClass="btn-primary"
-      [class]="{ 'btn-disabled': !deliveryInfoForm.valid }"
+      styleClass="w-full "
+      [class]="!deliveryInfoForm.valid ? 'opacity-50 cursor-not-allowed' : ''"
     />
   </div>
 </form>
