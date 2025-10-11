@@ -37,55 +37,40 @@ import { DeliveryInfoFormData } from '../checkout.interface';
 })
 export class DeliveryInfo {
   // Inputs and Outputs
+  readonly deliveryInfoForm = input.required<FormGroup>();
   readonly initialData = input<Partial<DeliveryInfoFormData>>();
   readonly formSubmitted = output<DeliveryInfoFormData>();
   readonly continueClicked = output<void>();
 
-  // Private dependencies
-  private fb = inject(FormBuilder);
+  isFormValid!: boolean;
 
-  // Form group
-  deliveryInfoForm!: FormGroup;
-
-  readonly isFormValid = computed(() => this.deliveryInfoForm.valid);
-
+  // Lifecycle hook to populate form with initial data
   ngOnInit(): void {
-    this.deliveryInfoForm = this.createForm();
+    this.populateFormWithInitialData();
+
+    this.isFormValid = this.deliveryInfoForm().valid;
+    this.deliveryInfoForm().valueChanges.subscribe(
+      () => (this.isFormValid = this.deliveryInfoForm().valid),
+    );
   }
 
-  private createForm(): FormGroup {
-    return this.fb.group({
-      // Customer Information
-      customerName: ['', [Validators.required, Validators.minLength(2)]],
-      customerPhone: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(
-            /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
-          ),
-        ],
-      ],
-      customerEmail: ['', [Validators.email]],
-
-      // Detailed Address Information
-      addressLine1: ['', [Validators.required, Validators.minLength(5)]],
-      addressLine2: [''],
-      noExterior: ['', [Validators.required]],
-      noInterior: [''],
-      specialInstructions: [''],
-    });
+  private populateFormWithInitialData(): void {
+    const initialData = this.initialData();
+    if (initialData && Object.keys(initialData).length > 0) {
+      this.deliveryInfoForm().patchValue(initialData);
+    }
   }
+
   onContinue(): void {
-    if (this.deliveryInfoForm.valid) {
-      this.formSubmitted.emit(
-        this.deliveryInfoForm.value as DeliveryInfoFormData,
-      );
+    const form = this.deliveryInfoForm();
+
+    if (form.valid) {
+      this.formSubmitted.emit(form.value as DeliveryInfoFormData);
       this.continueClicked.emit();
     } else {
       // Mark all fields as touched to show validation errors
-      Object.keys(this.deliveryInfoForm.controls).forEach((key) => {
-        const control = this.deliveryInfoForm.get(key);
+      Object.keys(form.controls).forEach((key) => {
+        const control = form.get(key);
         control?.markAsTouched();
       });
     }

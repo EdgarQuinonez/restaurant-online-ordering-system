@@ -35,6 +35,8 @@ import { FinalReview } from './final-review/final-review';
   styleUrl: './checkout.css',
 })
 export class Checkout {
+  // Master form group
+  orderForm!: FormGroup;
   // Form groups for each step
   deliveryInfoForm!: FormGroup;
   orderSummaryForm!: FormGroup;
@@ -67,6 +69,16 @@ export class Checkout {
     this.orderSummaryForm = this.createOrderSummaryForm();
     this.paymentForm = this.createPaymentForm();
     this.finalReviewForm = this.createFinalReviewForm();
+
+    // Create master form
+
+    // This exists as the final validation should be performed on every step to allow submit to backend
+    this.orderForm = new FormGroup({
+      deliverInfo: this.deliveryInfoForm,
+      orderSummary: this.orderSummaryForm,
+      payment: this.paymentForm,
+      finalReview: this.finalReviewForm,
+    });
   }
 
   // Form creation methods
@@ -156,7 +168,6 @@ export class Checkout {
   // Event handlers for child components
   onDeliveryInfoSubmit(deliveryData: any): void {
     console.log('Delivery info submitted:', deliveryData);
-    // You can process the delivery data here if needed
   }
 
   onPaymentComplete(paymentData: any): void {

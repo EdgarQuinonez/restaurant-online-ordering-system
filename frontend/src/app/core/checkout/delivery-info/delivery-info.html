@@ -1,4 +1,4 @@
-<form [formGroup]="deliveryInfoForm">
+<form [formGroup]="deliveryInfoForm()">
   <!-- Header Section -->
   <div class="text-center mb-6 sm:mb-8">
     <h1 class="text-2xl md:text-4xl font-bold text-surface-800 mb-2">
@@ -24,8 +24,8 @@
             formControlName="customerName"
             placeholder="Ingresa tu nombre completo"
             [invalid]="
-              deliveryInfoForm.get('customerName')?.touched &&
-              deliveryInfoForm.get('customerName')?.invalid
+              deliveryInfoForm().get('customerName')?.touched &&
+              deliveryInfoForm().get('customerName')?.invalid
             "
             class="w-full"
           />
@@ -34,16 +34,16 @@
           >
         </p-iftalabel>
         @if (
-          deliveryInfoForm.get("customerName")?.touched &&
-          deliveryInfoForm.get("customerName")?.hasError("required")
+          deliveryInfoForm().get("customerName")?.touched &&
+          deliveryInfoForm().get("customerName")?.hasError("required")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >El nombre es requerido</span
           >
         }
         @if (
-          deliveryInfoForm.get("customerName")?.touched &&
-          deliveryInfoForm.get("customerName")?.hasError("minlength")
+          deliveryInfoForm().get("customerName")?.touched &&
+          deliveryInfoForm().get("customerName")?.hasError("minlength")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >El nombre debe tener al menos 2 caracteres</span
@@ -60,24 +60,24 @@
             formControlName="customerPhone"
             placeholder="Ingresa tu número de teléfono"
             [invalid]="
-              deliveryInfoForm.get('customerPhone')?.touched &&
-              deliveryInfoForm.get('customerPhone')?.invalid
+              deliveryInfoForm().get('customerPhone')?.touched &&
+              deliveryInfoForm().get('customerPhone')?.invalid
             "
             class="w-full"
           />
           <label for="customerPhone" class="text-surface-700">Teléfono</label>
         </p-iftalabel>
         @if (
-          deliveryInfoForm.get("customerPhone")?.touched &&
-          deliveryInfoForm.get("customerPhone")?.hasError("required")
+          deliveryInfoForm().get("customerPhone")?.touched &&
+          deliveryInfoForm().get("customerPhone")?.hasError("required")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >El teléfono es requerido</span
           >
         }
         @if (
-          deliveryInfoForm.get("customerPhone")?.touched &&
-          deliveryInfoForm.get("customerPhone")?.hasError("pattern")
+          deliveryInfoForm().get("customerPhone")?.touched &&
+          deliveryInfoForm().get("customerPhone")?.hasError("pattern")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >Por favor ingresa un número de teléfono válido</span
@@ -94,8 +94,8 @@
             formControlName="customerEmail"
             placeholder="Ingresa tu correo electrónico (opcional)"
             [invalid]="
-              deliveryInfoForm.get('customerEmail')?.touched &&
-              deliveryInfoForm.get('customerEmail')?.invalid
+              deliveryInfoForm().get('customerEmail')?.touched &&
+              deliveryInfoForm().get('customerEmail')?.invalid
             "
             class="w-full"
           />
@@ -104,8 +104,8 @@
           >
         </p-iftalabel>
         @if (
-          deliveryInfoForm.get("customerEmail")?.touched &&
-          deliveryInfoForm.get("customerEmail")?.hasError("email")
+          deliveryInfoForm().get("customerEmail")?.touched &&
+          deliveryInfoForm().get("customerEmail")?.hasError("email")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >Por favor ingresa un correo electrónico válido</span
@@ -133,24 +133,24 @@
             formControlName="addressLine1"
             placeholder="Calle, Avenida, Boulevard, etc."
             [invalid]="
-              deliveryInfoForm.get('addressLine1')?.touched &&
-              deliveryInfoForm.get('addressLine1')?.invalid
+              deliveryInfoForm().get('addressLine1')?.touched &&
+              deliveryInfoForm().get('addressLine1')?.invalid
             "
             class="w-full"
           />
           <label for="addressLine1" class="text-surface-700">Calle</label>
         </p-iftalabel>
         @if (
-          deliveryInfoForm.get("addressLine1")?.touched &&
-          deliveryInfoForm.get("addressLine1")?.hasError("required")
+          deliveryInfoForm().get("addressLine1")?.touched &&
+          deliveryInfoForm().get("addressLine1")?.hasError("required")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >La dirección principal es requerida</span
           >
         }
         @if (
-          deliveryInfoForm.get("addressLine1")?.touched &&
-          deliveryInfoForm.get("addressLine1")?.hasError("minlength")
+          deliveryInfoForm().get("addressLine1")?.touched &&
+          deliveryInfoForm().get("addressLine1")?.hasError("minlength")
         ) {
           <span class="text-sm text-invalid mt-1 block"
             >La dirección debe tener al menos 5 caracteres</span
@@ -183,8 +183,8 @@
               formControlName="noExterior"
               placeholder="Número exterior"
               [invalid]="
-                deliveryInfoForm.get('noExterior')?.touched &&
-                deliveryInfoForm.get('noExterior')?.invalid
+                deliveryInfoForm().get('noExterior')?.touched &&
+                deliveryInfoForm().get('noExterior')?.invalid
               "
               class="w-full"
             />
@@ -193,8 +193,8 @@
             >
           </p-iftalabel>
           @if (
-            deliveryInfoForm.get("noExterior")?.touched &&
-            deliveryInfoForm.get("noExterior")?.hasError("required")
+            deliveryInfoForm().get("noExterior")?.touched &&
+            deliveryInfoForm().get("noExterior")?.hasError("required")
           ) {
             <span class="text-sm text-invalid mt-1 block"
               >El número exterior es requerido</span
@@ -251,9 +251,9 @@
     <p-button
       label="Continuar al Resumen del Pedido"
       (onClick)="onContinue()"
-      [disabled]="!deliveryInfoForm.valid"
-      styleClass="w-full "
-      [class]="!deliveryInfoForm.valid ? 'opacity-50 cursor-not-allowed' : ''"
+      [disabled]="!isFormValid"
+      styleClass="w-full"
+      [class]="!isFormValid ? 'opacity-50 cursor-not-allowed' : ''"
     />
   </div>
 </form>

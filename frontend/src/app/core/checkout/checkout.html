@@ -161,6 +161,8 @@
         <ng-template #content let-activateCallback="activateCallback">
           <div class="min-h-96">
             <app-delivery-info
+              [deliveryInfoForm]="deliveryInfoForm"
+              [initialData]="deliveryInfoFormData"
               (formSubmitted)="onDeliveryInfoSubmit($event)"
               (continueClicked)="activateCallback(1)"
             />
