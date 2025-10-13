@@ -1,1 +1,108 @@
-<p>payment works!</p>
+<div class="payment-container">
+  <h2 class="text-xl font-semibold text-gray-900 mb-6">Información de Pago</h2>
+
+  <form [formGroup]="paymentForm()" class="space-y-6">
+    <!-- Card Number -->
+    <div class="flex flex-col gap-2">
+      <label for="cardNumber" class="block text-sm font-medium text-gray-700">
+        Número de Tarjeta
+      </label>
+      <p-inputMask
+        id="cardNumber"
+        formControlName="cardNumber"
+        mask="9999 9999 9999 9999"
+        placeholder="1234 5678 9012 3456"
+        [invalid]="isFieldInvalid('cardNumber')"
+        class="w-full"
+      />
+      @if (isFieldInvalid("cardNumber")) {
+        <p-message severity="error" size="small" variant="simple">
+          {{ getFieldError("cardNumber") }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Card Holder Name -->
+    <div class="flex flex-col gap-2">
+      <label for="cardHolder" class="block text-sm font-medium text-gray-700">
+        Nombre del Titular
+      </label>
+      <input
+        id="cardHolder"
+        type="text"
+        pInputText
+        formControlName="cardHolder"
+        placeholder="JUAN PEREZ GARCIA"
+        [invalid]="isFieldInvalid('cardHolder')"
+        class="w-full"
+      />
+      @if (isFieldInvalid("cardHolder")) {
+        <p-message severity="error" size="small" variant="simple">
+          {{ getFieldError("cardHolder") }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Expiry Date and CVV -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Expiry Date -->
+      <div class="flex flex-col gap-2">
+        <label for="expiryDate" class="block text-sm font-medium text-gray-700">
+          Fecha de Expiración
+        </label>
+        <p-inputMask
+          id="expiryDate"
+          formControlName="expiryDate"
+          mask="99/99"
+          placeholder="MM/AA"
+          [invalid]="isFieldInvalid('expiryDate')"
+          class="w-full"
+          fluid
+        />
+        @if (isFieldInvalid("expiryDate")) {
+          <p-message severity="error" size="small" variant="simple">
+            {{ getFieldError("expiryDate") }}
+          </p-message>
+        }
+      </div>
+
+      <!-- CVV -->
+      <div class="flex flex-col gap-2">
+        <label for="cvv" class="block text-sm font-medium text-gray-700">
+          CVV
+        </label>
+        <p-inputMask
+          id="cvv"
+          formControlName="cvv"
+          mask="999"
+          placeholder="123"
+          [invalid]="isFieldInvalid('cvv')"
+          class="w-full"
+          fluid
+        />
+        @if (isFieldInvalid("cvv")) {
+          <p-message severity="error" size="small" variant="simple">
+            {{ getFieldError("cvv") }}
+          </p-message>
+        }
+      </div>
+    </div>
+  </form>
+
+  <!-- Navigation Buttons -->
+  <div class="flex pt-6 justify-between">
+    <p-button
+      (onClick)="goBack()"
+      label="Atrás"
+      severity="secondary"
+      icon="pi pi-arrow-left"
+    />
+    <p-button
+      label="Realizar Pago"
+      (onClick)="onContinue()"
+      [disabled]="!formValid()"
+      icon="pi pi-lock"
+      [class]="!formValid() ? 'opacity-50 cursor-not-allowed' : ''"
+    />
+  </div>
+</div>

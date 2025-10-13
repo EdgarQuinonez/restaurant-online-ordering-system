@@ -174,20 +174,12 @@
       <p-step-panel [value]="1">
         <ng-template #content let-activateCallback="activateCallback">
           <div class="min-h-96">
-            <app-order-summary (continueClicked)="activateCallback(2)" />
-          </div>
-          <div class="flex pt-6 justify-between">
-            <p-button
-              (onClick)="activateCallback(0)"
-              label="Atrás"
-              severity="secondary"
-              icon="pi pi-arrow-left"
-            />
-            <p-button
-              (onClick)="activateCallback(2)"
-              label="Continuar a Pago"
-              icon="pi pi-arrow-right"
-              iconPos="right"
+            <app-order-summary
+              [orderSummaryForm]="orderSummaryForm"
+              [initialData]="orderSummaryFormData"
+              (formSubmitted)="onOrderSummarySubmit($event)"
+              (goBackClicked)="activateCallback(0)"
+              (continueClicked)="activateCallback(2)"
             />
           </div>
         </ng-template>
@@ -198,22 +190,11 @@
         <ng-template #content let-activateCallback="activateCallback">
           <div class="min-h-96">
             <app-payment
-              (paymentCompleted)="onPaymentComplete($event)"
+              [paymentForm]="paymentForm"
+              [initialData]="paymentFormData"
+              (formSubmitted)="onPaymentSubmit($event)"
+              (goBackClicked)="activateCallback(1)"
               (continueClicked)="activateCallback(3)"
-            />
-          </div>
-          <div class="flex pt-6 justify-between">
-            <p-button
-              (onClick)="activateCallback(1)"
-              label="Atrás"
-              severity="secondary"
-              icon="pi pi-arrow-left"
-            />
-            <p-button
-              (onClick)="activateCallback(3)"
-              label="Continuar a Revisión Final"
-              icon="pi pi-arrow-right"
-              iconPos="right"
             />
           </div>
         </ng-template>

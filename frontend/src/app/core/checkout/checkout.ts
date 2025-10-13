@@ -3,6 +3,7 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
+  FormControl,
   Validators,
 } from '@angular/forms';
 import { CurrencyPipe, JsonPipe, NgClass } from '@angular/common';
@@ -105,25 +106,30 @@ export class Checkout {
 
   private createOrderSummaryForm(): FormGroup {
     return this.fb.group({
-      items: this.fb.array([]),
-      subtotal: [0, [Validators.required, Validators.min(0)]],
-      deliveryFee: [0, [Validators.required, Validators.min(0)]],
-      serviceFee: [0, [Validators.required, Validators.min(0)]],
-      tax: [0, [Validators.required, Validators.min(0)]],
-      total: [0, [Validators.required, Validators.min(0.01)]],
-      restaurantNote: [''],
+      specialInstructions: [''],
     });
   }
 
   private createPaymentForm(): FormGroup {
-    return this.fb.group({
-      paymentMethod: ['credit_card', [Validators.required]],
-      cardNumber: [''],
-      expiryDate: [''],
-      cvc: [''],
-      nameOnCard: [''],
-      saveCard: [false],
-      billingAddressSameAsDelivery: [true],
+    return new FormGroup({
+      cardNumber: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/), // Matches the masked format: 1234 5678 9012 3456
+      ]),
+      cardHolder: new FormControl('', [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(50),
+        Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/), // Only letters and spaces
+      ]),
+      expiryDate: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/), // MM/YY format
+      ]),
+      cvv: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^\d{3,4}$/), // 3 or 4 digits
+      ]),
     });
   }
 
@@ -168,6 +174,14 @@ export class Checkout {
   // Event handlers for child components
   onDeliveryInfoSubmit(deliveryData: any): void {
     console.log('Delivery info submitted:', deliveryData);
+  }
+
+  onOrderSummarySubmit(orderSummaryData: any): void {
+    console.log('Order Summary submitted:', orderSummaryData);
+  }
+
+  onPaymentSubmit(paymentData: any): void {
+    console.log('Payment submitted:', paymentData);
   }
 
   onPaymentComplete(paymentData: any): void {

@@ -1,1 +1,142 @@
-<p>order-summary works!</p>
+<div class="order-summary-container">
+  <!-- Order Items Section -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold text-gray-900 mb-4">Resumen del Pedido</h2>
+
+    @if (hasItems()) {
+      <div class="space-y-4">
+        @for (item of shoppingCart.items; track $index) {
+          <div
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white"
+          >
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900">
+                {{ item.name }} ({{ item.size }})
+              </h3>
+              <p class="text-sm text-gray-600">Cantidad: {{ item.quantity }}</p>
+              <p class="text-sm text-gray-600">
+                Precio unitario: ${{ item.price | number: "1.2-2" }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold text-gray-900">
+                ${{ getItemTotal(item) | number: "1.2-2" }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div
+        class="text-center py-8 border border-gray-200 rounded-lg bg-gray-50"
+      >
+        <i class="pi pi-shopping-cart text-4xl text-gray-400 mb-3"></i>
+        <p class="text-gray-600">No hay items en el carrito</p>
+      </div>
+    }
+  </div>
+
+  <!-- Price Breakdown Section -->
+  @if (hasItems()) {
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-3">Desglose de Pago</h3>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">Subtotal</span>
+          <span class="text-gray-900"
+            >${{ calculateSubtotal() | number: "1.2-2" }}</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">Costo de envío</span>
+          <span class="text-gray-900"
+            >${{ getDeliveryFee() | number: "1.2-2" }}</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">IVA (16%)</span>
+          <span class="text-gray-900"
+            >${{ calculateTax() | number: "1.2-2" }}</span
+          >
+        </div>
+        <div
+          class="flex justify-between items-center pt-3 border-t border-gray-200"
+        >
+          <span class="text-lg font-semibold text-gray-900">Total</span>
+          <span class="text-lg font-semibold text-primary"
+            >${{ calculateTotal() | number: "1.2-2" }}</span
+          >
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Special Instructions Section -->
+  @if (hasItems()) {
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-3">
+        Instrucciones Especiales
+      </h3>
+      <form [formGroup]="orderSummaryForm()">
+        <div class="flex flex-col gap-2">
+          <label
+            for="specialInstructions"
+            class="block text-sm font-medium text-gray-700"
+          >
+            Notas para la preparación (opcional)
+          </label>
+          <textarea
+            id="specialInstructions"
+            rows="5"
+            cols="30"
+            pTextarea
+            formControlName="specialInstructions"
+            [invalid]="
+              orderSummaryForm().get('specialInstructions')?.touched &&
+              orderSummaryForm().get('specialInstructions')?.invalid
+            "
+            placeholder="Ej: Sin mayonesa, bien cocido, para llevar, etc."
+            class="w-full"
+          ></textarea>
+          @if (
+            orderSummaryForm().get("specialInstructions")?.touched &&
+            orderSummaryForm().get("specialInstructions")?.invalid
+          ) {
+            <p-message severity="error" size="small" variant="simple">
+              Las instrucciones especiales son requeridas
+            </p-message>
+          }
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Navigation Buttons -->
+  @if (hasItems()) {
+    <div class="flex pt-6 justify-between">
+      <p-button
+        (onClick)="goBack()"
+        label="Atrás"
+        severity="secondary"
+        icon="pi pi-arrow-left"
+      />
+      <p-button
+        label="Continuar al Pago"
+        (onClick)="onContinue()"
+        [disabled]="!isFormValid"
+        icon="pi pi-credit-card"
+        [class]="!isFormValid ? 'opacity-50 cursor-not-allowed' : ''"
+      />
+    </div>
+  } @else {
+    <!-- Only show back button when cart is empty -->
+    <div class="flex pt-6 justify-start">
+      <p-button
+        (onClick)="goBack()"
+        label="Atrás"
+        severity="secondary"
+        icon="pi pi-arrow-left"
+      />
+    </div>
+  }
+</div>

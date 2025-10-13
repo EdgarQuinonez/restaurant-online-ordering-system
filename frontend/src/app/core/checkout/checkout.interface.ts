@@ -1,3 +1,5 @@
+import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
+
 export type CheckoutStep =
   | 'deliveryInfo'
   | 'orderSummary'
@@ -21,17 +23,14 @@ export interface DeliveryInfoFormData {
   specialInstructions: string;
 }
 
-export interface PaymentMethod {
-  type: 'credit_card' | 'digital_wallet' | 'cash';
-  label: string;
-  details?: string;
+export interface OrderSummaryFormData {
+  specialInstructions: string;
 }
-
-export interface CardDetails {
+export interface PaymentFormData {
   cardNumber: string;
+  cardHolder: string;
   expiryDate: string;
-  cvc: string;
-  nameOnCard: string;
+  cvv: string;
 }
 
 export interface OrderStatus {
