@@ -190,7 +190,6 @@ export class Checkout {
 
   canSubmitOrder(): boolean {
     return (
-      this.finalReviewForm?.valid &&
       this.deliveryInfoForm?.valid &&
       this.orderSummaryForm?.valid &&
       this.paymentForm?.valid
@@ -201,7 +200,6 @@ export class Checkout {
     this.deliveryInfoForm.reset();
     this.orderSummaryForm.reset();
     this.paymentForm.reset();
-    this.finalReviewForm.reset();
     this.currentStepIndex.set(0);
   }
 
@@ -216,10 +214,6 @@ export class Checkout {
 
   get paymentFormData() {
     return this.paymentForm.value;
-  }
-
-  get finalReviewFormData() {
-    return this.finalReviewForm.value;
   }
 
   get orderFormData() {
