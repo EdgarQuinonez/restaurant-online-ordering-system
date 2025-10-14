@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { CurrencyPipe, JsonPipe, NgClass, AsyncPipe } from '@angular/common';
 
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { OrderResponse } from './checkout.interface';
 import { LoadingState } from '@utils/switchMapWithLoading';
 // PrimeNG imports
@@ -22,6 +22,7 @@ import { OrderSummary } from './order-summary/order-summary';
 import { Payment } from './payment/payment';
 import { FinalReview } from './final-review/final-review';
 import { Router } from '@angular/router';
+import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
 
 @Component({
   selector: 'app-checkout',
@@ -66,6 +67,7 @@ export class Checkout {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private checkoutService = inject(CheckoutService);
+  private shoppingCartService = inject(ShoppingCartService);
 
   ngOnInit(): void {
     // Initialize forms
@@ -190,7 +192,13 @@ export class Checkout {
       const orderData = this.orderForm.value;
       console.log('Submitting order:', orderData);
 
-      this.orderResult$ = this.checkoutService.placeOrder$(orderData);
+      this.orderResult$ = this.checkoutService.placeOrder$(orderData).pipe(
+        tap((response: any) => {
+          if (response.data) {
+            this.shoppingCartService.clearCart();
+          }
+        }),
+      );
 
       // Reset forms or navigate to confirmation page
       this.resetForms();
