@@ -55,13 +55,6 @@ export class Checkout {
     'finalReview',
   ];
 
-  // Computed order data for final review
-  readonly orderData = computed(() => ({
-    deliveryInfo: this.deliveryInfoForm?.value,
-    orderSummary: this.orderSummaryForm?.value,
-    payment: this.paymentForm?.value,
-  }));
-
   private fb = inject(FormBuilder);
 
   ngOnInit(): void {
@@ -69,16 +62,14 @@ export class Checkout {
     this.deliveryInfoForm = this.createDeliveryInfoForm();
     this.orderSummaryForm = this.createOrderSummaryForm();
     this.paymentForm = this.createPaymentForm();
-    this.finalReviewForm = this.createFinalReviewForm();
 
     // Create master form
 
     // This exists as the final validation should be performed on every step to allow submit to backend
     this.orderForm = new FormGroup({
-      deliverInfo: this.deliveryInfoForm,
+      deliveryInfo: this.deliveryInfoForm,
       orderSummary: this.orderSummaryForm,
       payment: this.paymentForm,
-      finalReview: this.finalReviewForm,
     });
   }
 
@@ -133,12 +124,6 @@ export class Checkout {
     });
   }
 
-  private createFinalReviewForm(): FormGroup {
-    return this.fb.group({
-      termsAccepted: [false, [Validators.requiredTrue]],
-    });
-  }
-
   // Navigation helper methods
   canNavigateToStep(stepIndex: number): boolean {
     // Allow navigation to current step or any completed step
@@ -165,7 +150,7 @@ export class Checkout {
       case 'payment':
         return this.paymentForm?.valid ?? false;
       case 'finalReview':
-        return this.finalReviewForm?.valid ?? false;
+        return true;
       default:
         return false;
     }
@@ -191,8 +176,8 @@ export class Checkout {
 
   // Order submission
   submitOrder(): void {
-    if (this.finalReviewForm.valid) {
-      const orderData = this.orderData();
+    if (this.orderForm.valid) {
+      const orderData = this.orderForm.value;
       console.log('Submitting order:', orderData);
 
       // Here you would typically call your order service
@@ -235,5 +220,9 @@ export class Checkout {
 
   get finalReviewFormData() {
     return this.finalReviewForm.value;
+  }
+
+  get orderFormData() {
+    return this.orderForm.value;
   }
 }

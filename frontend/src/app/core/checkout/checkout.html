@@ -204,24 +204,10 @@
       <p-step-panel [value]="3">
         <ng-template #content let-activateCallback="activateCallback">
           <div class="min-h-96">
-            <!-- <app-final-review [orderData]="orderData()" /> -->
-
-            <app-final-review />
-          </div>
-          <div class="flex pt-6 justify-between">
-            <p-button
-              (onClick)="activateCallback(2)"
-              label="Atrás"
-              severity="secondary"
-              icon="pi pi-arrow-left"
-            />
-            <p-button
-              (onClick)="submitOrder()"
-              label="Confirmar Pedido"
-              severity="success"
-              icon="pi pi-check"
-              iconPos="right"
-              [disabled]="!canSubmitOrder()"
+            <app-final-review
+              [orderData]="orderFormData"
+              (goBackClicked)="activateCallback(2)"
+              (continueClicked)="submitOrder()"
             />
           </div>
         </ng-template>

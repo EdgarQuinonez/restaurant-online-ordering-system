@@ -1,1 +1,224 @@
-<p>final-review works!</p>
+<div class="final-review-container">
+  <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+    Revisión Final del Pedido
+  </h2>
+
+  <!-- Delivery Information Section -->
+  <div class="mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+      Información de Entrega
+    </h3>
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      @if (orderData().deliveryInfo) {
+        <div class="space-y-3">
+          <!-- Customer Information -->
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Nombre:</span>
+              <span class="font-medium text-gray-900">{{
+                orderData().deliveryInfo.customerName || "No especificado"
+              }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Teléfono:</span>
+              <span class="font-medium text-gray-900">{{
+                orderData().deliveryInfo.customerPhone || "No especificado"
+              }}</span>
+            </div>
+            @if (orderData().deliveryInfo.customerEmail) {
+              <div class="flex justify-between">
+                <span class="text-gray-600">Email:</span>
+                <span class="font-medium text-gray-900">{{
+                  orderData().deliveryInfo.customerEmail
+                }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Address Information -->
+          <div class="pt-2 border-t border-gray-200 space-y-2">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Dirección:</span>
+              <span class="font-medium text-gray-900 text-right">
+                {{ orderData().deliveryInfo.addressLine1 }}
+                @if (orderData().deliveryInfo.addressLine2) {
+                  <br />{{ orderData().deliveryInfo.addressLine2 }}
+                }
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Número exterior:</span>
+              <span class="font-medium text-gray-900">{{
+                orderData().deliveryInfo.noExterior || "No especificado"
+              }}</span>
+            </div>
+            @if (orderData().deliveryInfo.noInterior) {
+              <div class="flex justify-between">
+                <span class="text-gray-600">Número interior:</span>
+                <span class="font-medium text-gray-900">{{
+                  orderData().deliveryInfo.noInterior
+                }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Special Instructions -->
+          <div class="pt-2 border-t border-gray-200">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Instrucciones de entrega:</span>
+              <span class="font-medium text-gray-900">{{
+                orderData().deliveryInfo.specialInstructions || "Ninguna"
+              }}</span>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <p class="text-gray-500 text-center">
+          No se proporcionó información de entrega
+        </p>
+      }
+    </div>
+  </div>
+
+  <!-- Order Summary Section -->
+  <div class="mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Resumen del Pedido</h3>
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      @if (hasItems()) {
+        <div class="space-y-3">
+          @for (item of shoppingCart.items; track $index) {
+            <div
+              class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
+            >
+              <div class="flex-1">
+                <p class="font-medium text-gray-900">
+                  {{ item.name }} ({{ item.size }})
+                </p>
+                <p class="text-sm text-gray-600">
+                  Cantidad: {{ item.quantity }}
+                </p>
+              </div>
+              <p class="font-semibold text-gray-900">
+                ${{ item.price * item.quantity | number: "1.2-2" }}
+              </p>
+            </div>
+          }
+
+          <!-- Special Instructions -->
+          @if (orderData().orderSummary?.specialInstructions) {
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <p class="text-sm font-medium text-gray-700">
+                Instrucciones especiales de preparación:
+              </p>
+              <p class="text-sm text-gray-600 mt-1">
+                {{ orderData().orderSummary.specialInstructions }}
+              </p>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-gray-500 text-center">No hay items en el carrito</p>
+      }
+    </div>
+  </div>
+
+  <!-- Payment Information Section -->
+  <div class="mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+      Información de Pago
+    </h3>
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      @if (orderData().payment) {
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Método de pago:</span>
+            <span class="font-medium text-gray-900">{{
+              getPaymentMethod(orderData().payment)
+            }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Titular:</span>
+            <span class="font-medium text-gray-900">{{
+              orderData().payment.cardHolder || "No especificado"
+            }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Expira:</span>
+            <span class="font-medium text-gray-900">{{
+              formatExpiryDate(orderData().payment.expiryDate)
+            }}</span>
+          </div>
+        </div>
+      } @else {
+        <p class="text-gray-500 text-center">
+          No se proporcionó información de pago
+        </p>
+      }
+    </div>
+  </div>
+
+  <!-- Price Breakdown Section -->
+  <div class="mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Desglose de Pago</h3>
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">Subtotal</span>
+          <span class="text-gray-900"
+            >${{ calculateSubtotal() | number: "1.2-2" }}</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">Costo de envío</span>
+          <span class="text-gray-900"
+            >${{ getDeliveryFee() | number: "1.2-2" }}</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">IVA (16%)</span>
+          <span class="text-gray-900"
+            >${{ calculateTax() | number: "1.2-2" }}</span
+          >
+        </div>
+        <div
+          class="flex justify-between items-center pt-3 border-t border-gray-200"
+        >
+          <span class="text-lg font-semibold text-gray-900">Total</span>
+          <span class="text-lg font-semibold text-primary"
+            >${{ calculateTotal() | number: "1.2-2" }}</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Notice -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div class="flex items-start gap-3">
+      <i class="pi pi-info-circle text-blue-500 mt-0.5"></i>
+      <div>
+        <p class="text-sm text-blue-800 font-medium">Confirmación del Pedido</p>
+        <p class="text-xs text-blue-600 mt-1">
+          Al confirmar el pedido, autorizas el cargo a tu tarjeta y aceptas
+          nuestros términos y condiciones.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="flex pt-4 justify-between">
+    <p-button
+      (onClick)="goBack()"
+      label="Atrás"
+      severity="secondary"
+      icon="pi pi-arrow-left"
+    />
+    <p-button
+      label="Confirmar Pedido"
+      (onClick)="onContinue()"
+      icon="pi pi-check"
+      severity="success"
+    />
+  </div>
+</div>

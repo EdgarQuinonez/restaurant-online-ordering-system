@@ -33,6 +33,12 @@ export interface PaymentFormData {
   cvv: string;
 }
 
+export interface OrderData {
+  deliveryInfo: DeliveryInfoFormData;
+  orderSummary: OrderSummaryFormData;
+  payment: PaymentFormData;
+}
+
 export interface OrderStatus {
   status:
     | 'received'
