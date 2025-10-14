@@ -19,6 +19,7 @@
       "@components/*": ["./src/app/shared/components/*"],
       "@pages/*": ["./src/app/pages/*"],
       "@services/*": ["./src/app/shared/services/*"],
+      "@utils/*": ["./src/app/shared/utils/*"],
       "@environment": ["./src/environments/environment.ts"]
     }
   },

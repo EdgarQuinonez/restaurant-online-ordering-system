@@ -12,20 +12,7 @@ import { DecimalPipe } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
 import { ShoppingCart } from '@core/shopping-cart/shopping-cart.interface';
-
-export interface OrderData {
-  deliveryInfo: any;
-  orderSummary: any;
-  payment: any;
-}
-
-export interface FinalReviewData {
-  deliveryInfo: any;
-  orderSummary: any;
-  payment: any;
-  cartTotal: number;
-  itemCount: number;
-}
+import { OrderData } from '../checkout.interface';
 
 @Component({
   selector: 'app-final-review',

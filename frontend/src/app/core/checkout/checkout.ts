@@ -6,17 +6,22 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { CurrencyPipe, JsonPipe, NgClass } from '@angular/common';
+import { CurrencyPipe, JsonPipe, NgClass, AsyncPipe } from '@angular/common';
 
+import { Observable } from 'rxjs';
+import { OrderResponse } from './checkout.interface';
+import { LoadingState } from '@utils/switchMapWithLoading';
 // PrimeNG imports
 import { StepperModule } from 'primeng/stepper';
 import { ButtonModule } from 'primeng/button';
 
 import { CheckoutStep } from './checkout.interface';
+import { CheckoutService } from './checkout.service';
 import { DeliveryInfo } from './delivery-info/delivery-info';
 import { OrderSummary } from './order-summary/order-summary';
 import { Payment } from './payment/payment';
 import { FinalReview } from './final-review/final-review';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-checkout',
@@ -31,6 +36,7 @@ import { FinalReview } from './final-review/final-review';
     CurrencyPipe,
     JsonPipe,
     NgClass,
+    AsyncPipe,
   ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
@@ -44,6 +50,8 @@ export class Checkout {
   paymentForm!: FormGroup;
   finalReviewForm!: FormGroup;
 
+  orderResult$: Observable<LoadingState<OrderResponse>> | null = null;
+
   // Stepper state - using 0-based index for PrimeNG stepper
   readonly currentStepIndex = signal<number>(0);
 
@@ -56,6 +64,8 @@ export class Checkout {
   ];
 
   private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private checkoutService = inject(CheckoutService);
 
   ngOnInit(): void {
     // Initialize forms
@@ -180,12 +190,19 @@ export class Checkout {
       const orderData = this.orderForm.value;
       console.log('Submitting order:', orderData);
 
-      // Here you would typically call your order service
-      // this.orderService.submitOrder(orderData).subscribe(...);
+      this.orderResult$ = this.checkoutService.placeOrder$(orderData);
 
       // Reset forms or navigate to confirmation page
       this.resetForms();
     }
+  }
+
+  navigateHome(): void {
+    this.router.navigateByUrl('/');
+  }
+
+  retryOrder(): void {
+    this.orderResult$ = null;
   }
 
   canSubmitOrder(): boolean {

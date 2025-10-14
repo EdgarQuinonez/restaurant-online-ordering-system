@@ -39,6 +39,14 @@ export interface OrderData {
   payment: PaymentFormData;
 }
 
+// TODO: Replace with real backend implementation with order tracking url probably idk websockets
+export interface OrderResponse {
+  orderId: string;
+  status: 'success' | 'failed';
+  message: string;
+  transactionId?: string;
+}
+
 export interface OrderStatus {
   status:
     | 'received'
@@ -49,11 +57,4 @@ export interface OrderStatus {
   label: string;
   isActive: boolean;
   estimatedTime?: string;
-}
-
-export interface OrderResponse {
-  success: boolean;
-  orderId: string;
-  estimatedDeliveryTime: string;
-  trackingUrl?: string;
 }
