@@ -159,7 +159,8 @@ export class ShoppingCartService {
     };
   }
 
-  // Additional utility methods
+  // TODO: Test to control banana binding
+  showCart(): void {}
   getCartItemCount(): number {
     return this.cartState.itemCount;
   }

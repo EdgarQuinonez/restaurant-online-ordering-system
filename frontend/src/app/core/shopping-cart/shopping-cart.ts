@@ -48,6 +48,10 @@ export class ShoppingCart {
     this.drawerRef.close(e);
   }
 
+  showCart() {
+    this.cartVisible = true;
+  }
+
   ngOnDestroy() {
     if (this.cartSubscription) {
       this.cartSubscription.unsubscribe();
