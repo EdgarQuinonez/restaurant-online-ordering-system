@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, input, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ShoppingCartService } from './shopping-cart.service';
@@ -25,7 +25,7 @@ import { CartItem as CartItemComponent } from '@core/shopping-cart/cart-item/car
   styleUrl: './shopping-cart.css',
 })
 export class ShoppingCart {
-  @ViewChild('drawerRef') drawerRef!: Drawer;
+  private drawerRef = viewChild<Drawer>('drawerRef');
 
   private shoppingCartService = inject(ShoppingCartService);
 
@@ -43,9 +43,13 @@ export class ShoppingCart {
       this.cartItemCount = cart.itemCount;
       this.cartItems = cart.items;
     });
+
+    this.shoppingCartService.cartDisplay$.subscribe((isDisplayed) => {
+      this.cartVisible = isDisplayed;
+    });
   }
   closeCallback(e: any): void {
-    this.drawerRef.close(e);
+    this.drawerRef()?.close(e);
   }
 
   showCart() {

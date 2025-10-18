@@ -24,6 +24,8 @@ export class ShoppingCartService {
   // 1. Create cart$ BehaviorSubject to emit cart state changes
   private cartSubject = new BehaviorSubject<ShoppingCart>(this.cartState);
   public cart$ = this.cartSubject.asObservable();
+  private cartDisplaySubject = new BehaviorSubject<boolean>(false);
+  public cartDisplay$ = this.cartDisplaySubject.asObservable();
 
   // 2. Get shopping cart items
   getShoppingCart(): ShoppingCart {
@@ -159,8 +161,9 @@ export class ShoppingCartService {
     };
   }
 
-  // TODO: Test to control banana binding
-  showCart(): void {}
+  showCart(): void {
+    this.cartDisplaySubject.next(true);
+  }
   getCartItemCount(): number {
     return this.cartState.itemCount;
   }
