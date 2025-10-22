@@ -43,6 +43,7 @@ router.register(r"sizes", SizeViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("delivery/", include("delivery.urls")),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
 ]

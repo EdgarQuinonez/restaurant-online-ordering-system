@@ -8,7 +8,7 @@
       >
         <div class="text-center">
           <div
-            class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"
+            class="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
           ></div>
           <h3 class="text-xl font-semibold text-gray-900 mb-2">
             Procesando tu pedido
@@ -98,13 +98,25 @@
     }
   }
 
+  <!-- Go Back Btn -->
+  <div
+    class="w-full absolute top-0 h-16 md:h-20 flex items-center justify-start"
+  >
+    <a href="/">
+      <p-button
+        icon="pi pi-arrow-left"
+        aria-label="Regresar al menú principal"
+        variant="text"
+      />
+    </a>
+  </div>
   <!-- PrimeNG Stepper (only show when no order result is being processed) -->
   @if (
     !(orderResult$ | async)?.loading &&
     !(orderResult$ | async)?.data &&
     !(orderResult$ | async)?.error
   ) {
-    <p-stepper [(value)]="currentStepIndex" class="w-full">
+    <p-stepper [(value)]="currentStepIndex" class="w-full p-20">
       <p-step-list class="flex justify-between items-center w-full">
         <!-- Delivery Info Step -->
         <p-step [value]="0" class="flex flex-row flex-auto gap-2">
@@ -121,8 +133,6 @@
               <span
                 class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
                 [ngClass]="{
-                  'bg-primary text-primary-contrast border-primary':
-                    value <= currentStepIndex(),
                   'border-surface-200 bg-surface-100 text-surface-700':
                     value > currentStepIndex(),
                   'bg-green-600 text-white border-green-600':
@@ -159,8 +169,6 @@
               <span
                 class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
                 [ngClass]="{
-                  'bg-primary text-primary-contrast border-primary':
-                    value <= currentStepIndex(),
                   'border-surface-200 bg-surface-100 text-surface-700':
                     value > currentStepIndex(),
                   'bg-green-600 text-white border-green-600':
@@ -197,8 +205,6 @@
               <span
                 class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
                 [ngClass]="{
-                  'bg-primary text-primary-contrast border-primary':
-                    value <= currentStepIndex(),
                   'border-surface-200 bg-surface-100 text-surface-700':
                     value > currentStepIndex(),
                   'bg-green-600 text-white border-green-600':
@@ -235,8 +241,6 @@
               <span
                 class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
                 [ngClass]="{
-                  'bg-primary text-primary-contrast border-primary':
-                    value <= currentStepIndex(),
                   'border-surface-200 bg-surface-100 text-surface-700':
                     value > currentStepIndex(),
                   'bg-green-600 text-white border-green-600':

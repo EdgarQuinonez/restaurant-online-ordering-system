@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { MenuPage } from '@pages/menu/menu.page';
 import { CheckoutPage } from '@pages/checkout/checkout.page';
 import { OrderPage } from '@pages/order/order.page';
+import { AdminPage } from '@pages/admin/admin.page';
 
 export const routes: Routes = [
   {
@@ -18,5 +19,10 @@ export const routes: Routes = [
     path: 'order',
     component: OrderPage,
     title: 'Tus Pedidos',
+  },
+  {
+    path: 'admin',
+    component: AdminPage,
+    title: 'Panel de Administrador',
   },
 ];

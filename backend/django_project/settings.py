@@ -33,6 +33,7 @@ CORS_ALLOWED_ORIGINS = [
 
 INSTALLED_APPS = [
     "menu.apps.MenuConfig",
+    "delivery.apps.DeliveryConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

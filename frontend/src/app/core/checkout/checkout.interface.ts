@@ -48,13 +48,7 @@ export interface OrderResponse {
 }
 
 export interface OrderStatus {
-  status:
-    | 'received'
-    | 'preparing'
-    | 'driver_assigned'
-    | 'on_the_way'
-    | 'delivered';
+  status: 'pending' | 'assigned' | 'picked' | 'delivered';
   label: string;
   isActive: boolean;
-  estimatedTime?: string;
 }
