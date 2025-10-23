@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { CurrencyPipe, JsonPipe, NgClass, AsyncPipe } from '@angular/common';
 
-import { Observable, tap } from 'rxjs';
+import { Observable, switchMap, tap } from 'rxjs';
 import { OrderResponse } from './checkout.interface';
 import { LoadingState } from '@utils/switchMapWithLoading';
 // PrimeNG imports
@@ -194,6 +194,7 @@ export class Checkout {
 
       this.orderResult$ = this.checkoutService.placeOrder$(orderData).pipe(
         tap((response: any) => {
+          console.log(response);
           if (response.data) {
             this.shoppingCartService.clearCart();
           }
