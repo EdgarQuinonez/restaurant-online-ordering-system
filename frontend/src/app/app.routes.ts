@@ -3,6 +3,7 @@ import { MenuPage } from '@pages/menu/menu.page';
 import { CheckoutPage } from '@pages/checkout/checkout.page';
 import { OrderPage } from '@pages/order/order.page';
 import { AdminPage } from '@pages/admin/admin.page';
+import { Login } from '@pages/admin/login/login';
 
 export const routes: Routes = [
   {
@@ -25,4 +26,5 @@ export const routes: Routes = [
     component: AdminPage,
     title: 'Panel de Administrador',
   },
+  { path: 'admin/login', component: Login },
 ];
