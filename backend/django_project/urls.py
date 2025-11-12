@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from delivery.views import OrderViewSet
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.urls import include, path
@@ -40,10 +41,10 @@ router = routers.DefaultRouter()
 router.register(r"users", UserViewSet)
 router.register(r"menu", MenuItemViewSet)
 router.register(r"sizes", SizeViewSet)
+router.register(r"orders", OrderViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("delivery/", include("delivery.urls")),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
 ]

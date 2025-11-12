@@ -1,5 +1,10 @@
+import uuid
+from datetime import datetime
+
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from menu.models import MenuItem, Size
 
 
@@ -60,6 +65,46 @@ class Order(models.Model):
     def __str__(self):
         return self.order_number
 
+    def create_order_items(self, menu_items_data):
+        """
+        Create OrderItem instances for this order
+
+        Args:
+            menu_items_data: List of dictionaries containing:
+                - menu_item_id: ID of the MenuItem
+                - size_id: ID of the Size
+                - quantity: Quantity of the item
+        """
+        order_items = []
+        for item_data in menu_items_data:
+            try:
+                menu_item = MenuItem.objects.get(id=item_data["menu_item_id"])
+                size = Size.objects.get(id=item_data["size_id"])
+
+                # Calculate price based on menu item and size
+                price = size.price
+
+                order_item = OrderItem.objects.create(
+                    order=self,
+                    menu_item=menu_item,
+                    size=size,
+                    quantity=item_data["quantity"],
+                    price=price,
+                    item_name=menu_item.name,
+                    size_name=size.name,
+                )
+                order_items.append(order_item)
+            except (MenuItem.DoesNotExist, Size.DoesNotExist) as e:
+                # Handle missing items - you might want to log this or raise an exception
+                print(f"Error creating order item: {e}")
+                continue
+
+        return order_items
+
+    def calculate_total_amount(self):
+        """Calculate total amount from all order items"""
+        return sum(item.price * item.quantity for item in self.order_items.all())
+
     class Meta:
         ordering = ["-created_at"]
 
@@ -94,3 +139,19 @@ class OrderItem(models.Model):
         if not self.size_name:
             self.size_name = self.size.name
         super().save(*args, **kwargs)
+
+    @property
+    def subtotal(self):
+        return self.price * self.quantity
+
+
+@receiver(pre_save, sender=Order)
+def generate_order_number(sender, instance, **kwargs):
+    """
+    Generate a unique order number before saving if it doesn't exist
+    Format: ORD-YYYYMMDD-UUID
+    """
+    if not instance.order_number:
+        date_part = datetime.now().strftime("%Y%m%d")
+        unique_part = str(uuid.uuid4())[:8].upper()
+        instance.order_number = f"ORD-{date_part}-{unique_part}"
