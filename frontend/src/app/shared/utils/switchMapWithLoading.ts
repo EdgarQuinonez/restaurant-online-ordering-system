@@ -11,7 +11,7 @@ import {
 
 export interface LoadingState<T = unknown> {
   loading: boolean;
-  error?: Error | null;
+  error?: any | null; // Changed from Error to any to accommodate different error formats
   data?: T;
 }
 
@@ -22,9 +22,18 @@ export function switchMapWithLoading<T>(
     source.pipe(
       switchMap((value) =>
         observableFunction(value).pipe(
-          map((data) => ({ data, loading: false })),
-          catchError((error) => of({ error, loading: false })),
-          startWith({ error: null, loading: true }),
+          map((data) => ({ data, loading: false, error: null })),
+          catchError((error) => {
+            // Handle different error formats
+            const normalizedError =
+              error?.error || error || 'Unknown error occurred';
+            return of({
+              error: normalizedError,
+              loading: false,
+              data: undefined,
+            });
+          }),
+          startWith({ error: null, loading: true, data: undefined }),
         ),
       ),
       scan((state: LoadingState<T>, change: LoadingState<T>) => ({

@@ -18,7 +18,7 @@ import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
 export class CheckoutService {
   private http = inject(HttpClient);
   private shoppingCartService = inject(ShoppingCartService);
-  private endpoint = `${environment.apiUrl}/delivery/orders/`;
+  private endpoint = `${environment.apiUrl}/orders/`;
 
   public placeOrder$(
     orderData: OrderData,
@@ -27,7 +27,6 @@ export class CheckoutService {
       switchMapWithLoading(() => {
         // Transform the form data to match backend API format
         const transformedData = this.transformOrderData(orderData);
-        console.log('Transformed order data:', transformedData);
         return this.http.post<OrderResponse>(this.endpoint, transformedData);
       }),
     );

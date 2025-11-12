@@ -170,19 +170,19 @@ export class Checkout {
 
   // Event handlers for child components
   onDeliveryInfoSubmit(deliveryData: any): void {
-    console.log('Delivery info submitted:', deliveryData);
+    // console.log('Delivery info submitted:', deliveryData);
   }
 
   onOrderSummarySubmit(orderSummaryData: any): void {
-    console.log('Order Summary submitted:', orderSummaryData);
+    // console.log('Order Summary submitted:', orderSummaryData);
   }
 
   onPaymentSubmit(paymentData: any): void {
-    console.log('Payment submitted:', paymentData);
+    // console.log('Payment submitted:', paymentData);
   }
 
   onPaymentComplete(paymentData: any): void {
-    console.log('Payment completed:', paymentData);
+    // console.log('Payment completed:', paymentData);
     // You can process the payment data here if needed
   }
 
@@ -190,7 +190,6 @@ export class Checkout {
   submitOrder(): void {
     if (this.orderForm.valid) {
       const orderData = this.orderForm.value;
-      console.log('Submitting order:', orderData);
 
       this.orderResult$ = this.checkoutService.placeOrder$(orderData).pipe(
         tap((response: any) => {
@@ -244,5 +243,27 @@ export class Checkout {
 
   get orderFormData() {
     return this.orderForm.value;
+  }
+  // Add this method to your Checkout component class
+  getErrorMessages(errors: any): string[] {
+    const messages: string[] = [];
+
+    if (typeof errors === 'string') {
+      messages.push(errors);
+    } else if (Array.isArray(errors)) {
+      messages.push(...errors);
+    } else if (typeof errors === 'object') {
+      for (const [key, value] of Object.entries(errors)) {
+        if (Array.isArray(value)) {
+          messages.push(...value.map((v) => `${key}: ${v}`));
+        } else if (typeof value === 'string') {
+          messages.push(`${key}: ${value}`);
+        } else if (typeof value === 'object') {
+          messages.push(...this.getErrorMessages(value));
+        }
+      }
+    }
+
+    return messages;
   }
 }

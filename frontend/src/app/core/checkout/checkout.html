@@ -11,7 +11,7 @@
             class="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
           ></div>
           <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Procesandj tu pedido
+            Procesando tu pedido
           </h3>
           <p class="text-gray-600">
             Estamos confirmando tu pago y preparando tu orden...
@@ -20,7 +20,7 @@
       </div>
     }
 
-    @if (orderResult.data) {
+    @if (orderResult.data && orderResult.data.success) {
       <!-- Success Screen -->
       <div class="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div class="text-center max-w-md mx-auto p-6">
@@ -32,17 +32,89 @@
           <h2 class="text-2xl font-bold text-gray-900 mb-4">
             ¡Pedido Confirmado!
           </h2>
+
+          <!-- Display success message -->
           <p class="text-gray-600 mb-2">
-            Tu pedido ha sido procesado exitosamente.
+            Espera tu pedido a domicilio muy pronto
           </p>
-          <p class="text-gray-600 mb-6">
-            <!-- Número de orden: <strong>{{ orderResult.data.order.id }}</strong> -->
-            Mockup blah blabh
-          </p>
-          <p class="text-sm text-gray-500 mb-6">
-            Recibirás un correo de confirmación con los detalles de tu pedido y
-            tiempo estimado de entrega.
-          </p>
+
+          <!-- Display order number -->
+          @if (orderResult.data.order) {
+            <p class="text-gray-600 mb-2">
+              Número de orden:
+              <strong>{{ orderResult.data.order.order_number }}</strong>
+            </p>
+          }
+
+          <!-- Display transaction ID -->
+          @if (orderResult.data.order.transaction_id) {
+            <p class="text-gray-600 mb-2">
+              ID de transacción:
+              <strong>{{ orderResult.data.order.transaction_id }}</strong>
+            </p>
+          }
+
+          <!-- Display total amount -->
+          @if (orderResult.data.order) {
+            <p class="text-gray-600 mb-2">
+              Total:
+              <strong>${{ orderResult.data.order.total_amount }}</strong>
+            </p>
+          }
+
+          <!-- Display order status -->
+          @if (orderResult.data.order) {
+            <p class="text-gray-600 mb-6">
+              Estado:
+              <strong>
+                @switch (orderResult.data.order.status_display?.toLowerCase()) {
+                  @case ("pending") {
+                    Pendiente
+                  }
+                  @case ("assigned") {
+                    Asignado
+                  }
+                  @case ("picked") {
+                    Recogido
+                  }
+                  @case ("delivered") {
+                    Entregado
+                  }
+                  @default {
+                    {{ orderResult.data.order.status_display }}
+                  }
+                }
+              </strong>
+            </p>
+          }
+          <!-- <p class="text-sm text-gray-500 mb-6"> -->
+          <!--   Recibirás un correo de confirmación con los detalles de tu pedido y -->
+          <!--   tiempo estimado de entrega. -->
+          <!-- </p> -->
+
+          <!-- Order items summary -->
+          @if (orderResult.data.order) {
+            <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+              <h4 class="font-semibold text-gray-900 mb-2">
+                Resumen de tu pedido:
+              </h4>
+              <ul class="text-sm text-gray-600 space-y-1">
+                @for (
+                  item of orderResult.data.order.order_items;
+                  track item.id
+                ) {
+                  <li class="flex justify-between">
+                    <span
+                      >{{ item.quantity }}x {{ item.item_name }} -
+                      {{ item.size_name }}</span
+                    >
+                    <span>${{ item.subtotal }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
           <p-button
             label="Volver al Inicio"
             (onClick)="navigateHome()"
@@ -65,22 +137,40 @@
           <h2 class="text-2xl font-bold text-gray-900 mb-4">
             Error al Procesar el Pedido
           </h2>
-          <p class="text-gray-600 mb-4">
-            {{ orderResult.error.message }}
-          </p>
-          <!-- <p class="text-gray-600 mb-4"> -->
-          <!--   @if (orderResult.error.status === 404) { -->
-          <!--     No pudimos encontrar el servicio de pedidos. Por favor, intenta -->
-          <!--     nuevamente. -->
-          <!--   } @else if (orderResult.error.status === 500) { -->
-          <!--     Ocurrió un error en nuestro servidor. Por favor, intenta más -->
-          <!--     tarde. -->
-          <!--   } @else { -->
-          <!--     {{ -->
-          <!--       orderResult.error.message || "Ha ocurrido un error inesperado." -->
-          <!--     }} -->
-          <!--   } -->
-          <!-- </p> -->
+
+          <!-- Display error message from the response -->
+          @if (orderResult.error.message) {
+            <p class="text-gray-600 mb-4">
+              {{ orderResult.error.message }}
+            </p>
+          }
+
+          <!-- Display additional error details if available -->
+          @if (orderResult.error.detail) {
+            <p class="text-gray-600 mb-4">
+              {{ orderResult.error.detail }}
+            </p>
+          }
+
+          <!-- Display validation errors if available -->
+          @if (orderResult.error.errors) {
+            <div
+              class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-left"
+            >
+              <h4 class="font-semibold text-red-800 mb-2">
+                Errores de validación:
+              </h4>
+              <ul class="text-sm text-red-700 space-y-1">
+                @for (
+                  error of getErrorMessages(orderResult.error.errors);
+                  track $index
+                ) {
+                  <li>{{ error }}</li>
+                }
+              </ul>
+            </div>
+          }
+
           <div class="flex gap-4 justify-center">
             <p-button
               label="Intentar Nuevamente"
@@ -111,6 +201,7 @@
       />
     </a>
   </div>
+
   <!-- PrimeNG Stepper (only show when no order result is being processed) -->
   @if (
     !(orderResult$ | async)?.loading &&
