@@ -18,7 +18,7 @@ export class MenuItem {
   menuItem = input.required<MenuItemInterface>();
 
   // Computed properties from menuItem input
-  productId = computed(() => this.menuItem().id);
+  menuItemId = computed(() => this.menuItem().id);
   name = computed(() => this.menuItem().name);
   src = computed(() => this.menuItem().imgSrc);
   alt = computed(() => this.menuItem().imgAlt);
@@ -65,39 +65,40 @@ export class MenuItem {
       this.selectedSizeId.set(sortedSizes[0].id);
     }
 
-    // this.cartItem = this.shoppingCartService.getItem(
-    //   this.productId(),
-    //   this.selectedSize().name,
-    // );
-
-    // this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0;
+    // Subscribe to cart updates to sync quantity
     this.shoppingCartService.cart$.subscribe(() => {
-      this.cartItem = this.shoppingCartService.getItem(
-        this.productId(),
-        this.selectedSize().name,
-      );
-      this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0; // the idea is to update itemQuantity (local banana binding to display on input number) with updates made on service so it syncs in both menu-item and cart-item
+      const selectedSize = this.selectedSize();
+      if (selectedSize) {
+        this.cartItem = this.shoppingCartService.getItem(
+          this.menuItemId(),
+          selectedSize.id,
+        );
+        this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0;
+      }
     });
   }
 
   selectSize(sizeId: number): void {
     this.selectedSizeId.set(sizeId);
 
-    this.cartItem = this.shoppingCartService.getItem(
-      this.productId(),
-      this.selectedSize().name,
-    );
-
-    this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0;
+    const selectedSize = this.selectedSize();
+    if (selectedSize) {
+      this.cartItem = this.shoppingCartService.getItem(
+        this.menuItemId(),
+        selectedSize.id,
+      );
+      this.itemQuantity = this.cartItem ? this.cartItem.quantity : 0;
+    }
   }
 
-  // 1. Add menu item to cart based on productId and size
+  // 1. Add menu item to cart based on menuItemId and sizeId
   addToCart(): void {
     const selectedSize = this.selectedSize();
     if (!selectedSize) return;
 
     const cartItem: CartItem = {
-      productId: this.productId(),
+      menuItemId: this.menuItemId(),
+      sizeId: selectedSize.id,
       size: selectedSize.name,
       name: this.name(),
       price: parseFloat(selectedSize.price), // Convert string price to number
@@ -108,23 +109,34 @@ export class MenuItem {
     this.shoppingCartService.addItem(cartItem);
   }
 
-  // 3. Update menu item quantity in cart based on productId and size
+  // 3. Update menu item quantity in cart based on menuItemId and sizeId
   public updateQuantity(e: InputNumberInputEvent) {
-    this.cartItem = this.shoppingCartService.getItem(
-      this.productId(),
-      this.selectedSize().name,
-    );
+    const selectedSize = this.selectedSize();
+    if (!selectedSize) return;
+
     const newQuantity = e.value;
 
     if (typeof newQuantity === 'number') {
+      this.cartItem = this.shoppingCartService.getItem(
+        this.menuItemId(),
+        selectedSize.id,
+      );
+
       if (this.cartItem) {
         this.shoppingCartService.updateItemQuantity(
-          this.cartItem.productId,
-          this.cartItem.size,
+          this.menuItemId(),
+          selectedSize.id,
           newQuantity,
         );
-      } else {
+      } else if (newQuantity > 0) {
+        // If item doesn't exist in cart but quantity > 0, add it
         this.addToCart();
+        // Then update to the correct quantity
+        this.shoppingCartService.updateItemQuantity(
+          this.menuItemId(),
+          selectedSize.id,
+          newQuantity,
+        );
       }
     }
   }

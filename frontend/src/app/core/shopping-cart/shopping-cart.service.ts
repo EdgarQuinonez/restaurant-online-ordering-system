@@ -32,13 +32,19 @@ export class ShoppingCartService {
     return { ...this.cartState }; // Return a copy to prevent direct mutation
   }
 
+  // Get items array directly (useful for checkout transformation)
+  getItems(): CartItem[] {
+    return [...this.cartState.items];
+  }
+
   // 3. Keep state of items in cart (CRUD operations)
 
-  // Create/Add item to cart - UPDATED to support same product with different sizes
+  // Create/Add item to cart - UPDATED to use menuItemId and sizeId
   addItem(item: CartItem): ShoppingCart {
     const existingItem = this.cartState.items.find(
       (cartItem) =>
-        cartItem.productId === item.productId && cartItem.size === item.size,
+        cartItem.menuItemId === item.menuItemId &&
+        cartItem.sizeId === item.sizeId,
     );
 
     if (existingItem) {
@@ -54,26 +60,27 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // Read - Get specific item - UPDATED to include size
-  getItem(productId: number, size: string): CartItem | undefined {
+  // Read - Get specific item - UPDATED to use menuItemId and sizeId
+  getItem(menuItemId: number, sizeId: number): CartItem | undefined {
     return this.cartState.items.find(
-      (item) => item.productId === productId && item.size === size,
+      (item) => item.menuItemId === menuItemId && item.sizeId === sizeId,
     );
   }
 
-  // Update item quantity - UPDATED to include size
+  // Update item quantity - UPDATED to use menuItemId and sizeId
   updateItemQuantity(
-    productId: number,
-    size: string,
+    menuItemId: number,
+    sizeId: number,
     quantity: number,
   ): ShoppingCart {
     const item = this.cartState.items.find(
-      (cartItem) => cartItem.productId === productId && cartItem.size === size,
+      (cartItem) =>
+        cartItem.menuItemId === menuItemId && cartItem.sizeId === sizeId,
     );
 
     if (item) {
       if (quantity <= 0) {
-        return this.removeItem(productId, size);
+        return this.removeItem(menuItemId, sizeId);
       }
 
       item.quantity = quantity;
@@ -83,18 +90,25 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // Delete item from cart - UPDATED to include size
-  removeItem(productId: number, size: string): ShoppingCart {
+  // Delete item from cart - UPDATED to use menuItemId and sizeId
+  removeItem(menuItemId: number, sizeId: number): ShoppingCart {
     this.cartState.items = this.cartState.items.filter(
-      (item) => !(item.productId === productId && item.size === size),
+      (item) => !(item.menuItemId === menuItemId && item.sizeId === sizeId),
     );
     this.updateCartState();
     return this.getShoppingCart();
   }
 
-  // NEW: Get all items for a specific product (across all sizes)
-  getItemsByProductId(productId: number): CartItem[] {
-    return this.cartState.items.filter((item) => item.productId === productId);
+  // NEW: Get all items for a specific menu item (across all sizes)
+  getItemsByMenuItemId(menuItemId: number): CartItem[] {
+    return this.cartState.items.filter(
+      (item) => item.menuItemId === menuItemId,
+    );
+  }
+
+  // NEW: Get all items for a specific size (across all menu items)
+  getItemsBySizeId(sizeId: number): CartItem[] {
+    return this.cartState.items.filter((item) => item.sizeId === sizeId);
   }
 
   // Clear entire cart
@@ -104,12 +118,13 @@ export class ShoppingCartService {
     return this.getShoppingCart();
   }
 
-  // 4. Checkout function - UPDATED to include size in checkout request
+  // 4. Checkout function - UPDATED to include menuItemId and sizeId in checkout request
   checkout(): Observable<any> {
     const checkoutRequest: CheckoutRequest = {
       items: this.cartState.items.map((item) => ({
-        productId: item.productId,
-        size: item.size, // Added size to checkout request
+        menuItemId: item.menuItemId,
+        sizeId: item.sizeId,
+        size: item.size,
         quantity: item.quantity,
         price: item.price,
       })),
@@ -140,9 +155,29 @@ export class ShoppingCartService {
       // Ensure the loaded cart has proper calculated values
       savedCart.itemCount = this.calculateItemCount(savedCart.items);
       savedCart.total = this.calculateTotal(savedCart.items);
+
+      // Migrate old cart items if needed (backward compatibility)
+      const migratedItems = this.migrateCartItems(savedCart.items);
+      savedCart.items = migratedItems;
+
       return savedCart;
     }
     return this.getEmptyCart();
+  }
+
+  // Helper method to migrate old cart items to new structure
+  private migrateCartItems(items: any[]): CartItem[] {
+    return items.map((item) => {
+      // If it's an old item with productId, migrate to menuItemId
+      if (item.productId && !item.menuItemId) {
+        return {
+          ...item,
+          menuItemId: item.productId,
+          sizeId: item.sizeId || 0, // Default sizeId if not present
+        };
+      }
+      return item;
+    });
   }
 
   private calculateTotal(items: CartItem[]): number {
@@ -164,6 +199,11 @@ export class ShoppingCartService {
   showCart(): void {
     this.cartDisplaySubject.next(true);
   }
+
+  hideCart(): void {
+    this.cartDisplaySubject.next(false);
+  }
+
   getCartItemCount(): number {
     return this.cartState.itemCount;
   }

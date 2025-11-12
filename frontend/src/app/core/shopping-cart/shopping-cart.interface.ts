@@ -1,5 +1,6 @@
 export interface CartItem {
-  productId: number;
+  menuItemId: number;
+  sizeId: number;
   size: string;
   name: string;
   price: number;
@@ -15,7 +16,8 @@ export interface ShoppingCart {
 
 export interface CheckoutRequest {
   items: {
-    productId: number;
+    menuItemId: number;
+    sizeId: number;
     size: string;
     quantity: number;
     price: number;

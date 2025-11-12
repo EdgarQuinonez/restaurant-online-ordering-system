@@ -19,10 +19,18 @@ export class CartItem {
   itemQuantity = 0;
 
   ngOnInit() {
-    // this.itemQuantity = this.item().quantity;
+    // Initialize with current quantity
+    this.itemQuantity = this.item().quantity;
 
+    // Subscribe to cart updates to keep local quantity in sync
     this.shoppingCartService.cart$.subscribe(() => {
-      this.itemQuantity = this.item().quantity; // the idea is to update itemQuantity (local banana binding to display on input number) with updates made on service so it syncs in both menu-item and cart-item
+      const currentItem = this.shoppingCartService.getItem(
+        this.item().menuItemId,
+        this.item().sizeId,
+      );
+      if (currentItem) {
+        this.itemQuantity = currentItem.quantity;
+      }
     });
   }
 
@@ -30,8 +38,8 @@ export class CartItem {
     const newQuantity = e.value;
     if (typeof newQuantity === 'number') {
       this.shoppingCartService.updateItemQuantity(
-        this.item().productId,
-        this.item().size,
+        this.item().menuItemId,
+        this.item().sizeId,
         newQuantity,
       );
     }
@@ -39,8 +47,8 @@ export class CartItem {
 
   public removeItem() {
     this.shoppingCartService.removeItem(
-      this.item().productId,
-      this.item().size,
+      this.item().menuItemId,
+      this.item().sizeId,
     );
   }
 
