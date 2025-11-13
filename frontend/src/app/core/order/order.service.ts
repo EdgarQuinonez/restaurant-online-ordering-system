@@ -38,13 +38,9 @@ export class OrderService {
   /**
    * Get a specific order by ID
    */
-  getOrderById$(orderId: number): Observable<LoadingState<OrderByIdResponse>> {
-    return of(null).pipe(
-      switchMapWithLoading(() => {
-        return this.http.get<OrderByIdResponse>(
-          `${this.ORDERS_ENDPOINT}${orderId}/`,
-        );
-      }),
+  getOrderById$(orderId: number): Observable<OrderByIdResponse> {
+    return this.http.get<OrderByIdResponse>(
+      `${this.ORDERS_ENDPOINT}${orderId}`,
     );
   }
 

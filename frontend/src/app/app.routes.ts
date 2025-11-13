@@ -4,6 +4,8 @@ import { CheckoutPage } from '@pages/checkout/checkout.page';
 import { OrderPage } from '@pages/order/order.page';
 import { AdminPage } from '@pages/admin/admin.page';
 import { Login } from '@pages/admin/login/login';
+import { OrderDetail } from '@core/order/order-detail/order-detail';
+import { orderDetailResolver } from '@core/order/order-detail/order-detail-resolver';
 
 export const routes: Routes = [
   {
@@ -20,6 +22,13 @@ export const routes: Routes = [
     path: 'order',
     component: OrderPage,
     title: 'Tus Pedidos',
+  },
+  {
+    path: 'order/:id',
+    component: OrderDetail,
+    resolve: {
+      order: orderDetailResolver,
+    },
   },
   {
     path: 'admin',
