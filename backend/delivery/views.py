@@ -1,11 +1,12 @@
+from django.db import models
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
-from .models import Order
-from .serializers import OrderSerializer
+from .models import Customer, Order
+from .serializers import OrderListSerializer, OrderSerializer
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -17,6 +18,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         "list": [AllowAny],
         "retrieve": [AllowAny],
         "update_status": [AllowAny],
+        "my_orders": [AllowAny],
         "default": [IsAdminUser],
     }
 
@@ -31,6 +33,28 @@ class OrderViewSet(viewsets.ModelViewSet):
                 permission()
                 for permission in self.permission_classes_by_action["default"]
             ]
+
+    def get_queryset(self):
+        """
+        Override to filter orders by device_id for non-admin users
+        """
+        queryset = super().get_queryset()
+
+        # For non-admin users, filter by device_id if provided
+        if not self.request.user.is_staff:
+            device_id = self.request.headers.get("X-Device-ID")
+            if device_id:
+                try:
+                    customer = Customer.objects.get(device_id=device_id)
+                    queryset = queryset.filter(customer=customer)
+                except Customer.DoesNotExist:
+                    # Return empty queryset if customer doesn't exist
+                    return Order.objects.none()
+            else:
+                # Return empty queryset if no device_id provided for anonymous user
+                return Order.objects.none()
+
+        return queryset
 
     # POST /delivery/orders/: Create order with payment processing
     def create(self, request, *args, **kwargs):
@@ -54,7 +78,15 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         # If payment successful, create the order with transaction ID
         try:
-            # Save the order first
+            # Get device_id from header if provided
+            device_id = request.headers.get("X-Device-ID")
+
+            # Include device_id in the data for the serializer
+            order_data = serializer.validated_data.copy()
+            if device_id:
+                order_data["device_id"] = device_id
+
+            # Save the order
             order = serializer.save(
                 transaction_id=payment_result.get("transaction_id"),
                 status="pending",  # Set initial status as pending
@@ -63,14 +95,21 @@ class OrderViewSet(viewsets.ModelViewSet):
             # Get the serialized data for response
             response_data = serializer.data
 
+            # Build response with device_id if available (for new customers)
+            response_payload = {
+                "success": True,
+                "detail": "Order created successfully",
+                "order": response_data,
+                "payment_status": "success",
+                "transaction_id": payment_result.get("transaction_id"),
+            }
+
+            # Include device_id in response if it was generated (new customer)
+            if hasattr(order, "_device_id"):
+                response_payload["device_id"] = order._device_id
+
             return Response(
-                {
-                    "success": True,
-                    "detail": "Order created successfully",
-                    "order": response_data,
-                    "payment_status": "success",
-                    "transaction_id": payment_result.get("transaction_id"),
-                },
+                response_payload,
                 status=status.HTTP_201_CREATED,
             )
 
@@ -139,7 +178,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
 
-        # Apply filters
+        # Apply additional filters
         status_filter = request.query_params.get("status")
         date_filter = request.query_params.get("date")  # date in YYYY-MM-DD
         order_number = request.query_params.get("order_number")
@@ -167,10 +206,64 @@ class OrderViewSet(viewsets.ModelViewSet):
             {"success": True, "count": queryset.count(), "orders": serializer.data}
         )
 
+    # GET /delivery/orders/my-orders/: Get orders for current device_id
+    @action(detail=False, methods=["get"], url_path="my-orders")
+    def my_orders(self, request):
+        """
+        Get orders for the current device_id (anonymous user)
+        """
+        device_id = request.headers.get("X-Device-ID")
+
+        if not device_id:
+            return Response(
+                {
+                    "success": False,
+                    "detail": "Device ID is required. Please include X-Device-ID header.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            customer = Customer.objects.get(device_id=device_id)
+            orders = Order.objects.filter(customer=customer).order_by("-created_at")
+
+            # Use simplified serializer for listing
+            serializer = OrderListSerializer(orders, many=True)
+
+            return Response(
+                {
+                    "success": True,
+                    "count": orders.count(),
+                    "orders": serializer.data,
+                    "customer": {
+                        "device_id": str(customer.device_id),
+                        "created_at": customer.created_at,
+                    },
+                }
+            )
+
+        except Customer.DoesNotExist:
+            return Response(
+                {
+                    "success": True,
+                    "count": 0,
+                    "orders": [],
+                    "detail": "No orders found for this device.",
+                }
+            )
+
     # GET /delivery/orders/[id]/: Retrieve single order
     def retrieve(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
+            # Check if user has permission to view this order
+            if not self._can_view_order(request, instance):
+                return Response(
+                    {"success": False, "detail": "Order not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
             serializer = self.get_serializer(instance)
             return Response({"success": True, "order": serializer.data})
         except Order.DoesNotExist:
@@ -179,11 +272,34 @@ class OrderViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+    def _can_view_order(self, request, order):
+        """
+        Check if the current request can view the given order
+        """
+        # Admin users can view all orders
+        if request.user.is_staff:
+            return True
+
+        # Non-admin users can only view their own orders (by device_id)
+        device_id = request.headers.get("X-Device-ID")
+        if device_id and order.customer:
+            return str(order.customer.device_id) == device_id
+
+        return False
+
     # PUT /delivery/orders/[id]/status: update order status
     @action(detail=True, methods=["put"], url_path="status")
     def update_status(self, request, pk=None):
         try:
             order = self.get_object()
+
+            # Check if user has permission to update this order
+            if not request.user.is_staff:
+                return Response(
+                    {"success": False, "detail": "Permission denied."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
             new_status = request.data.get("status")
 
             if new_status not in dict(Order.STATUS_CHOICES).keys():
@@ -215,6 +331,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         try:
             order = self.get_object()
 
+            # Check if user has permission to delete this order
+            if not self._can_view_order(request, order):
+                return Response(
+                    {"success": False, "detail": "Order not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
             if order.status in ["assigned", "picked", "delivered"]:
                 return Response(
                     {
@@ -244,6 +367,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     # DELETE /delivery/orders/bulk_delete: Bulk delete orders
     @action(detail=False, methods=["delete"], url_path="bulk_delete")
     def bulk_delete(self, request):
+        # Only allow admin users to bulk delete
+        if not request.user.is_staff:
+            return Response(
+                {"success": False, "detail": "Permission denied."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         order_ids = request.data.get("order_ids", [])
         if not order_ids:
             return Response(
@@ -278,6 +408,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         """
         Search orders by customer name, phone, email, or order number
         """
+        # Only allow admin users to search all orders
+        if not request.user.is_staff:
+            return Response(
+                {"success": False, "detail": "Permission denied."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         search_query = request.query_params.get("q", "").strip()
 
         if not search_query:

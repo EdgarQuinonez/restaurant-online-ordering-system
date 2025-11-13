@@ -1,1 +1,211 @@
-<p>order works!</p>
+<div class="container mx-auto p-4 max-w-4xl">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Mis Pedidos</h1>
+      <p class="text-gray-600">Revisa el estado de tus pedidos recientes</p>
+    </div>
+    <p-button
+      label="Nuevo Pedido"
+      icon="pi pi-plus"
+      [routerLink]="['/menu']"
+      severity="primary"
+    >
+    </p-button>
+  </div>
+
+  <!-- Orders Observable -->
+  @if (orders | async; as orderState) {
+    <!-- Loading State -->
+    @if (orderState.loading) {
+      <div class="flex flex-col items-center justify-center py-16">
+        <p-progress-spinner
+          strokeWidth="8"
+          fill="transparent"
+          animationDuration=".5s"
+          [style]="{ width: '50px', height: '50px' }"
+          class="mb-4"
+        />
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          Cargando pedidos
+        </h3>
+        <p class="text-gray-600">Estamos obteniendo tus pedidos...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (orderState.error && !orderState.loading) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <i class="pi pi-exclamation-triangle text-2xl text-red-500 mt-1"></i>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-red-800 mb-2">
+              Error al cargar pedidos
+            </h3>
+            <p class="text-red-700 mb-4">
+              {{
+                orderState.error.detail ||
+                  orderState.error.message ||
+                  "Ha ocurrido un error inesperado"
+              }}
+            </p>
+            <p-button
+              label="Reintentar"
+              icon="pi pi-refresh"
+              severity="danger"
+              (onClick)="ngOnInit()"
+            >
+            </p-button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Success State with Data -->
+    @if (orderState.data && !orderState.loading) {
+      <!-- Check if API response was successful -->
+      @if (orderState.data.success) {
+        <!-- Empty State -->
+        @if (orderState.data.count === 0) {
+          <div class="text-center py-16 bg-gray-50 rounded-lg">
+            <i class="pi pi-shopping-bag text-6xl text-gray-400 mb-6"></i>
+            <h3 class="text-2xl font-semibold text-gray-900 mb-3">
+              No hay pedidos
+            </h3>
+            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+              Aún no has realizado ningún pedido. Comienza explorando nuestro
+              menú y haz tu primer pedido.
+            </p>
+            <p-button
+              label="Explorar Menú"
+              icon="pi pi-arrow-right"
+              [routerLink]="['/menu']"
+              severity="primary"
+            >
+            </p-button>
+          </div>
+        }
+
+        <!-- Orders List -->
+        @if (orderState.data.count > 0) {
+          <div class="space-y-6">
+            <!-- Orders Summary -->
+            <div
+              class="flex justify-between items-center bg-blue-50 rounded-lg p-4"
+            >
+              <div>
+                <h3 class="text-lg font-semibold text-blue-900">
+                  {{ orderState.data.count }}
+                  {{
+                    orderState.data.count === 1
+                      ? "pedido encontrado"
+                      : "pedidos encontrados"
+                  }}
+                </h3>
+                <p class="text-blue-700 text-sm">
+                  Todos tus pedidos recientes aparecen aquí
+                </p>
+              </div>
+
+              <!-- Device Info -->
+              @if (orderState.data.customer) {
+                <div class="text-right">
+                  <p class="text-blue-700 text-sm font-medium">
+                    ID de Dispositivo
+                  </p>
+                  <p class="text-blue-900 text-xs font-mono">
+                    {{ orderState.data.customer.device_id }}
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Orders Grid -->
+            <div class="grid gap-4">
+              @for (order of orderState.data.orders; track order.id) {
+                <div
+                  class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200"
+                >
+                  <div
+                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+                  >
+                    <!-- Order Info -->
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-3">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                          #{{ order.order_number }}
+                        </h3>
+                        <p-badge
+                          [value]="getStatusDisplay(order.status_display)"
+                          [severity]="getStatusSeverity(order.status)"
+                          class="text-sm"
+                        >
+                        </p-badge>
+                      </div>
+
+                      <div
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm"
+                      >
+                        <div class="flex items-center gap-2">
+                          <i class="pi pi-user text-gray-400"></i>
+                          <span class="text-gray-600">
+                            <strong>Cliente:</strong> {{ order.customer_name }}
+                          </span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <i class="pi pi-wallet text-gray-400"></i>
+                          <span class="text-gray-600">
+                            <strong>Total:</strong>
+                            {{
+                              order.total_amount
+                                | currency: "MXN" : "symbol" : "1.2-2"
+                            }}
+                          </span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <i class="pi pi-calendar text-gray-400"></i>
+                          <span class="text-gray-600">
+                            <strong>Fecha:</strong>
+                            {{ order.created_at | date: "medium" }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                      <p-button
+                        label="Ver Detalles"
+                        icon="pi pi-eye"
+                        severity="secondary"
+                        [outlined]="true"
+                        [routerLink]="['/orders', order.id]"
+                      >
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+    }
+  }
+
+  <!-- No State (initial load) -->
+  @if (!(orders | async)) {
+    <div class="flex flex-col items-center justify-center py-16">
+      <p-progress-spinner
+        strokeWidth="8"
+        fill="transparent"
+        animationDuration=".5s"
+        [style]="{ width: '50px', height: '50px' }"
+        class="mb-4"
+      />
+      <p class="text-gray-600">Inicializando...</p>
+    </div>
+  }
+</div>

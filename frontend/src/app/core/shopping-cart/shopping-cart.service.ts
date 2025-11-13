@@ -119,20 +119,20 @@ export class ShoppingCartService {
   }
 
   // 4. Checkout function - UPDATED to include menuItemId and sizeId in checkout request
-  checkout(): Observable<any> {
-    const checkoutRequest: CheckoutRequest = {
-      items: this.cartState.items.map((item) => ({
-        menuItemId: item.menuItemId,
-        sizeId: item.sizeId,
-        size: item.size,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      total: this.cartState.total,
-    };
-
-    return this.http.post(`${this.API_URL}/checkout/`, checkoutRequest);
-  }
+  // checkout(): Observable<any> {
+  //   const checkoutRequest: CheckoutRequest = {
+  //     items: this.cartState.items.map((item) => ({
+  //       menuItemId: item.menuItemId,
+  //       sizeId: item.sizeId,
+  //       size: item.size,
+  //       quantity: item.quantity,
+  //       price: item.price,
+  //     })),
+  //     total: this.cartState.total,
+  //   };
+  //
+  //   return this.http.post(`${this.API_URL}/checkout/`, checkoutRequest);
+  // }
 
   // Helper methods
   private updateCartState(): void {

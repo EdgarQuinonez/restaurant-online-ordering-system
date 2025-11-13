@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,6 +31,8 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
+
+CORS_ALLOW_HEADERS = [*default_headers, "x-device-id"]
 # Application definition
 
 INSTALLED_APPS = [

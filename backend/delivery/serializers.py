@@ -2,7 +2,7 @@ from menu.models import MenuItem, Size
 from menu.serializers import MenuItemSerializer, SizeSerializer
 from rest_framework import serializers
 
-from .models import Order, OrderItem
+from .models import Customer, Order, OrderItem
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -51,6 +51,13 @@ class OrderSerializer(serializers.ModelSerializer):
     # Status display field
     status_display = serializers.CharField(source="get_status_display", read_only=True)
 
+    # Device ID field for customer tracking (write-only, optional)
+    device_id = serializers.UUIDField(
+        write_only=True,
+        required=False,
+        help_text="Device ID for anonymous user tracking",
+    )
+
     class Meta:
         model = Order
         fields = [
@@ -65,6 +72,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "order_instructions",
             # Payment Information (from nested data - write only)
             "payment_info",
+            # Device ID for customer tracking
+            "device_id",
             # Order Items
             "menu_items",
             "order_items",
@@ -94,6 +103,7 @@ class OrderSerializer(serializers.ModelSerializer):
         order_instructions = validated_data.pop("order_instructions", {})
         payment_info = validated_data.pop("payment_info", {})
         menu_items_data = validated_data.pop("menu_items", [])
+        device_id = validated_data.pop("device_id", None)
 
         # Map customer info to model fields
         validated_data.update(
@@ -140,15 +150,15 @@ class OrderSerializer(serializers.ModelSerializer):
         # Set initial total amount (will be recalculated after creating order items)
         validated_data["total_amount"] = 0
 
-        # Create the order
-        order = Order.objects.create(**validated_data)
+        # Use the model's create_order_with_customer method to handle customer creation/association
+        order, customer_device_id = Order.create_order_with_customer(
+            order_data=validated_data,
+            menu_items_data=menu_items_data,
+            device_id=device_id,
+        )
 
-        # Create order items using the model method
-        order.create_order_items(menu_items_data)
-
-        # Recalculate and update total amount
-        order.total_amount = order.calculate_total_amount()
-        order.save()
+        # Store the device_id in the instance for the response
+        order._device_id = customer_device_id
 
         return order
 
@@ -197,4 +207,38 @@ class OrderSerializer(serializers.ModelSerializer):
             },
         }
 
+        # Include device_id in the response if available (for new customers)
+        if hasattr(instance, "_device_id"):
+            representation["device_id"] = instance._device_id
+
         return representation
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    """Serializer for Customer model"""
+
+    orders = OrderSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Customer
+        fields = ["device_id", "created_at", "last_seen", "orders"]
+        read_only_fields = ["device_id", "created_at", "last_seen"]
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for listing orders"""
+
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "order_number",
+            "status",
+            "status_display",
+            "total_amount",
+            "created_at",
+            "customer_name",
+        ]
+        read_only_fields = fields

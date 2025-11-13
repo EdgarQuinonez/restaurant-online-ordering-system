@@ -17,6 +17,7 @@ import { ButtonModule } from 'primeng/button';
 
 import { CheckoutStep } from './checkout.interface';
 import { CheckoutService } from './checkout.service';
+import { DeviceIdService } from '@services/device-id.service';
 import { DeliveryInfo } from './delivery-info/delivery-info';
 import { OrderSummary } from './order-summary/order-summary';
 import { Payment } from './payment/payment';
@@ -34,8 +35,6 @@ import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
     OrderSummary,
     Payment,
     FinalReview,
-    CurrencyPipe,
-    JsonPipe,
     NgClass,
     AsyncPipe,
   ],
@@ -68,6 +67,7 @@ export class Checkout {
   private router = inject(Router);
   private checkoutService = inject(CheckoutService);
   private shoppingCartService = inject(ShoppingCartService);
+  private deviceIdService = inject(DeviceIdService);
 
   ngOnInit(): void {
     // Initialize forms
@@ -196,6 +196,11 @@ export class Checkout {
           console.log(response);
           if (response.data) {
             this.shoppingCartService.clearCart();
+
+            if (response.data.device_id) {
+              this.deviceIdService.setDeviceId(response.data.device_id);
+              console.log('New device ID stored:', response.data.device_id);
+            }
           }
         }),
       );

@@ -8,6 +8,27 @@ from django.dispatch import receiver
 from menu.models import MenuItem, Size
 
 
+class Customer(models.Model):
+    """
+    Model to track anonymous users by device ID
+    """
+
+    device_id = models.UUIDField(
+        unique=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text="Unique identifier for anonymous users",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Customer {self.device_id}"
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
@@ -23,6 +44,16 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=100)
     customer_phone = models.CharField(max_length=15)
     customer_email = models.EmailField(max_length=255, blank=True, null=True)
+
+    # Customer tracking for anonymous users
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="orders",
+        null=True,
+        blank=True,
+        help_text="Anonymous customer identified by device ID",
+    )
 
     # Detailed Address Information (from DeliveryInfoFormData)
     address_line_1 = models.CharField(max_length=255)
@@ -105,6 +136,39 @@ class Order(models.Model):
         """Calculate total amount from all order items"""
         return sum(item.price * item.quantity for item in self.order_items.all())
 
+    @classmethod
+    def create_order_with_customer(cls, order_data, menu_items_data, device_id=None):
+        """
+        Create a new order with customer association
+
+        Args:
+            order_data: Dictionary containing order fields
+            menu_items_data: List of menu items for the order
+            device_id: Optional device ID for existing customer
+        """
+        # Find or create customer
+        customer = None
+        if device_id:
+            try:
+                customer = Customer.objects.get(device_id=device_id)
+            except Customer.DoesNotExist:
+                customer = None
+
+        if not customer:
+            customer = Customer.objects.create()
+
+        # Create the order
+        order = cls.objects.create(customer=customer, **order_data)
+
+        # Create order items
+        order.create_order_items(menu_items_data)
+
+        # Recalculate and update total amount
+        order.total_amount = order.calculate_total_amount()
+        order.save()
+
+        return order, customer.device_id
+
     class Meta:
         ordering = ["-created_at"]
 
@@ -155,3 +219,11 @@ def generate_order_number(sender, instance, **kwargs):
         date_part = datetime.now().strftime("%Y%m%d")
         unique_part = str(uuid.uuid4())[:8].upper()
         instance.order_number = f"ORD-{date_part}-{unique_part}"
+
+
+@receiver(pre_save, sender=Customer)
+def update_last_seen(sender, instance, **kwargs):
+    """
+    Update last_seen timestamp when customer places an order
+    """
+    instance.last_seen = datetime.now()
