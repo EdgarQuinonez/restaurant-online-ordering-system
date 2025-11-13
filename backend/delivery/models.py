@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+
 from menu.models import MenuItem, Size
 
 
@@ -148,6 +149,7 @@ class Order(models.Model):
         """
         # Find or create customer
         customer = None
+        print("device_id on create_order_with_customer: ", device_id)
         if device_id:
             try:
                 customer = Customer.objects.get(device_id=device_id)

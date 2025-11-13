@@ -82,7 +82,8 @@ class OrderViewSet(viewsets.ModelViewSet):
             device_id = request.headers.get("X-Device-ID")
 
             # Include device_id in the data for the serializer
-            order_data = serializer.validated_data.copy()
+            order_data = serializer.validated_data
+            print("Device Id provided on header: ", device_id)
             if device_id:
                 order_data["device_id"] = device_id
 
