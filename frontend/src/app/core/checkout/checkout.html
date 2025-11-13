@@ -67,7 +67,7 @@
             <p class="text-gray-600 mb-6">
               Estado:
               <strong>
-                @switch (orderResult.data.order.status_display?.toLowerCase()) {
+                @switch (orderResult.data.order.status_display.toLowerCase()) {
                   @case ("pending") {
                     Pendiente
                   }
@@ -203,216 +203,210 @@
   </div>
 
   <!-- PrimeNG Stepper (only show when no order result is being processed) -->
-  @if (
-    !(orderResult$ | async)?.loading &&
-    !(orderResult$ | async)?.data &&
-    !(orderResult$ | async)?.error
-  ) {
-    <p-stepper [(value)]="currentStepIndex" class="w-full p-20">
-      <p-step-list class="flex justify-between items-center w-full">
-        <!-- Delivery Info Step -->
-        <p-step [value]="0" class="flex flex-row flex-auto gap-2">
-          <ng-template
-            #content
-            let-activateCallback="activateCallback"
-            let-value="value"
+  <p-stepper [(value)]="currentStepIndex" class="w-full p-20">
+    <p-step-list class="flex justify-between items-center w-full">
+      <!-- Delivery Info Step -->
+      <p-step [value]="0" class="flex flex-row flex-auto gap-2">
+        <ng-template
+          #content
+          let-activateCallback="activateCallback"
+          let-value="value"
+        >
+          <button
+            class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
+            (click)="activateCallback()"
+            [disabled]="!canNavigateToStep(0)"
           >
-            <button
-              class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
-              (click)="activateCallback()"
-              [disabled]="!canNavigateToStep(0)"
+            <span
+              class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
+              [ngClass]="{
+                'border-surface-200 bg-surface-100 text-surface-700':
+                  value > currentStepIndex(),
+                'bg-green-600 text-white border-green-600':
+                  value < currentStepIndex(),
+              }"
             >
-              <span
-                class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
-                [ngClass]="{
-                  'border-surface-200 bg-surface-100 text-surface-700':
-                    value > currentStepIndex(),
-                  'bg-green-600 text-white border-green-600':
-                    value < currentStepIndex(),
-                }"
-              >
-                @if (value < currentStepIndex()) {
-                  <i class="pi pi-check text-sm"></i>
-                } @else {
-                  <i class="pi pi-truck text-sm"></i>
-                }
-              </span>
-              <span
-                class="text-xs font-medium whitespace-nowrap text-surface-700"
-              >
-                Información de Entrega
-              </span>
-            </button>
-          </ng-template>
-        </p-step>
+              @if (value < currentStepIndex()) {
+                <i class="pi pi-check text-sm"></i>
+              } @else {
+                <i class="pi pi-truck text-sm"></i>
+              }
+            </span>
+            <span
+              class="text-xs font-medium whitespace-nowrap text-surface-700"
+            >
+              Información de Entrega
+            </span>
+          </button>
+        </ng-template>
+      </p-step>
 
-        <!-- Order Summary Step -->
-        <p-step [value]="1" class="flex flex-row flex-auto gap-2">
-          <ng-template
-            #content
-            let-activateCallback="activateCallback"
-            let-value="value"
+      <!-- Order Summary Step -->
+      <p-step [value]="1" class="flex flex-row flex-auto gap-2">
+        <ng-template
+          #content
+          let-activateCallback="activateCallback"
+          let-value="value"
+        >
+          <button
+            class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
+            (click)="activateCallback()"
+            [disabled]="!canNavigateToStep(1)"
           >
-            <button
-              class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
-              (click)="activateCallback()"
-              [disabled]="!canNavigateToStep(1)"
+            <span
+              class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
+              [ngClass]="{
+                'border-surface-200 bg-surface-100 text-surface-700':
+                  value > currentStepIndex(),
+                'bg-green-600 text-white border-green-600':
+                  value < currentStepIndex(),
+              }"
             >
-              <span
-                class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
-                [ngClass]="{
-                  'border-surface-200 bg-surface-100 text-surface-700':
-                    value > currentStepIndex(),
-                  'bg-green-600 text-white border-green-600':
-                    value < currentStepIndex(),
-                }"
-              >
-                @if (value < currentStepIndex()) {
-                  <i class="pi pi-check text-sm"></i>
-                } @else {
-                  <i class="pi pi-shopping-bag text-sm"></i>
-                }
-              </span>
-              <span
-                class="text-xs font-medium whitespace-nowrap text-surface-700"
-              >
-                Resumen del Pedido
-              </span>
-            </button>
-          </ng-template>
-        </p-step>
+              @if (value < currentStepIndex()) {
+                <i class="pi pi-check text-sm"></i>
+              } @else {
+                <i class="pi pi-shopping-bag text-sm"></i>
+              }
+            </span>
+            <span
+              class="text-xs font-medium whitespace-nowrap text-surface-700"
+            >
+              Resumen del Pedido
+            </span>
+          </button>
+        </ng-template>
+      </p-step>
 
-        <!-- Payment Step -->
-        <p-step [value]="2" class="flex flex-row flex-auto gap-2">
-          <ng-template
-            #content
-            let-activateCallback="activateCallback"
-            let-value="value"
+      <!-- Payment Step -->
+      <p-step [value]="2" class="flex flex-row flex-auto gap-2">
+        <ng-template
+          #content
+          let-activateCallback="activateCallback"
+          let-value="value"
+        >
+          <button
+            class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
+            (click)="activateCallback()"
+            [disabled]="!canNavigateToStep(2)"
           >
-            <button
-              class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
-              (click)="activateCallback()"
-              [disabled]="!canNavigateToStep(2)"
+            <span
+              class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
+              [ngClass]="{
+                'border-surface-200 bg-surface-100 text-surface-700':
+                  value > currentStepIndex(),
+                'bg-green-600 text-white border-green-600':
+                  value < currentStepIndex(),
+              }"
             >
-              <span
-                class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
-                [ngClass]="{
-                  'border-surface-200 bg-surface-100 text-surface-700':
-                    value > currentStepIndex(),
-                  'bg-green-600 text-white border-green-600':
-                    value < currentStepIndex(),
-                }"
-              >
-                @if (value < currentStepIndex()) {
-                  <i class="pi pi-check text-sm"></i>
-                } @else {
-                  <i class="pi pi-credit-card text-sm"></i>
-                }
-              </span>
-              <span
-                class="text-xs font-medium whitespace-nowrap text-surface-700"
-              >
-                Pago
-              </span>
-            </button>
-          </ng-template>
-        </p-step>
+              @if (value < currentStepIndex()) {
+                <i class="pi pi-check text-sm"></i>
+              } @else {
+                <i class="pi pi-credit-card text-sm"></i>
+              }
+            </span>
+            <span
+              class="text-xs font-medium whitespace-nowrap text-surface-700"
+            >
+              Pago
+            </span>
+          </button>
+        </ng-template>
+      </p-step>
 
-        <!-- Final Review Step -->
-        <p-step [value]="3" class="flex flex-row flex-auto gap-2">
-          <ng-template
-            #content
-            let-activateCallback="activateCallback"
-            let-value="value"
+      <!-- Final Review Step -->
+      <p-step [value]="3" class="flex flex-row flex-auto gap-2">
+        <ng-template
+          #content
+          let-activateCallback="activateCallback"
+          let-value="value"
+        >
+          <button
+            class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
+            (click)="activateCallback()"
+            [disabled]="!canNavigateToStep(3)"
           >
-            <button
-              class="bg-transparent border-0 inline-flex flex-col gap-2 items-center"
-              (click)="activateCallback()"
-              [disabled]="!canNavigateToStep(3)"
+            <span
+              class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
+              [ngClass]="{
+                'border-surface-200 bg-surface-100 text-surface-700':
+                  value > currentStepIndex(),
+                'bg-green-600 text-white border-green-600':
+                  value < currentStepIndex(),
+              }"
             >
-              <span
-                class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center transition-all"
-                [ngClass]="{
-                  'border-surface-200 bg-surface-100 text-surface-700':
-                    value > currentStepIndex(),
-                  'bg-green-600 text-white border-green-600':
-                    value < currentStepIndex(),
-                }"
-              >
-                @if (value < currentStepIndex()) {
-                  <i class="pi pi-check text-sm"></i>
-                } @else {
-                  <i class="pi pi-eye text-sm"></i>
-                }
-              </span>
-              <span
-                class="text-xs font-medium whitespace-nowrap text-surface-700"
-              >
-                Revisión Final
-              </span>
-            </button>
-          </ng-template>
-        </p-step>
-      </p-step-list>
+              @if (value < currentStepIndex()) {
+                <i class="pi pi-check text-sm"></i>
+              } @else {
+                <i class="pi pi-eye text-sm"></i>
+              }
+            </span>
+            <span
+              class="text-xs font-medium whitespace-nowrap text-surface-700"
+            >
+              Revisión Final
+            </span>
+          </button>
+        </ng-template>
+      </p-step>
+    </p-step-list>
 
-      <p-step-panels>
-        <!-- Delivery Info Step Panel -->
-        <p-step-panel [value]="0">
-          <ng-template #content let-activateCallback="activateCallback">
-            <div class="min-h-96">
-              <app-delivery-info
-                [deliveryInfoForm]="deliveryInfoForm"
-                [initialData]="deliveryInfoFormData"
-                (formSubmitted)="onDeliveryInfoSubmit($event)"
-                (continueClicked)="activateCallback(1)"
-              />
-            </div>
-          </ng-template>
-        </p-step-panel>
+    <p-step-panels>
+      <!-- Delivery Info Step Panel -->
+      <p-step-panel [value]="0">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="min-h-96">
+            <app-delivery-info
+              [deliveryInfoForm]="deliveryInfoForm"
+              [initialData]="deliveryInfoFormData"
+              (formSubmitted)="onDeliveryInfoSubmit($event)"
+              (continueClicked)="activateCallback(1)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
 
-        <!-- Order Summary Step Panel -->
-        <p-step-panel [value]="1">
-          <ng-template #content let-activateCallback="activateCallback">
-            <div class="min-h-96">
-              <app-order-summary
-                [orderSummaryForm]="orderSummaryForm"
-                [initialData]="orderSummaryFormData"
-                (formSubmitted)="onOrderSummarySubmit($event)"
-                (goBackClicked)="activateCallback(0)"
-                (continueClicked)="activateCallback(2)"
-              />
-            </div>
-          </ng-template>
-        </p-step-panel>
+      <!-- Order Summary Step Panel -->
+      <p-step-panel [value]="1">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="min-h-96">
+            <app-order-summary
+              [orderSummaryForm]="orderSummaryForm"
+              [initialData]="orderSummaryFormData"
+              (formSubmitted)="onOrderSummarySubmit($event)"
+              (goBackClicked)="activateCallback(0)"
+              (continueClicked)="activateCallback(2)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
 
-        <!-- Payment Step Panel -->
-        <p-step-panel [value]="2">
-          <ng-template #content let-activateCallback="activateCallback">
-            <div class="min-h-96">
-              <app-payment
-                [paymentForm]="paymentForm"
-                [initialData]="paymentFormData"
-                (formSubmitted)="onPaymentSubmit($event)"
-                (goBackClicked)="activateCallback(1)"
-                (continueClicked)="activateCallback(3)"
-              />
-            </div>
-          </ng-template>
-        </p-step-panel>
+      <!-- Payment Step Panel -->
+      <p-step-panel [value]="2">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="min-h-96">
+            <app-payment
+              [paymentForm]="paymentForm"
+              [initialData]="paymentFormData"
+              (formSubmitted)="onPaymentSubmit($event)"
+              (goBackClicked)="activateCallback(1)"
+              (continueClicked)="activateCallback(3)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
 
-        <!-- Final Review Step Panel -->
-        <p-step-panel [value]="3">
-          <ng-template #content let-activateCallback="activateCallback">
-            <div class="min-h-96">
-              <app-final-review
-                [orderData]="orderFormData"
-                (goBackClicked)="activateCallback(2)"
-                (continueClicked)="submitOrder()"
-              />
-            </div>
-          </ng-template>
-        </p-step-panel>
-      </p-step-panels>
-    </p-stepper>
-  }
+      <!-- Final Review Step Panel -->
+      <p-step-panel [value]="3">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="min-h-96">
+            <app-final-review
+              [orderData]="orderFormData"
+              (goBackClicked)="activateCallback(2)"
+              (continueClicked)="submitOrder()"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-panels>
+  </p-stepper>
 </div>

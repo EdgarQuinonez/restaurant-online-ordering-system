@@ -25,7 +25,6 @@ import { DeliveryInfoFormData } from '../checkout.interface';
   selector: 'app-delivery-info',
   imports: [
     ReactiveFormsModule,
-    JsonPipe,
     InputTextModule,
     ButtonModule,
     RadioButtonModule,
