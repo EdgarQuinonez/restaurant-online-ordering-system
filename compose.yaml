@@ -10,6 +10,7 @@ services:
         - action: sync
           path: ./frontend
           target: /app
+
   db:
     restart: always
     image: postgres:17
@@ -26,9 +27,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      #CHANGE 1: this command checks if the database is ready, right on the source db server
-      #      test:
-      #       ["CMD-SHELL", "pg_isready -d ${DATABASE_NAME} -U ${DATABASE_USERNAME}"]
       test:
         ["CMD-SHELL", "pg_isready -d $$DATABASE_NAME -U $$DATABASE_USERNAME"]
       interval: 5s
@@ -55,6 +53,29 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
+      # Add Stripe environment variables
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     env_file: "./backend/.env"
+
+  # Add Stripe CLI service with login command
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe-cli
+    entrypoint: ["/bin/sh", "/run.sh"]
+    depends_on:
+      - backend-dev
+    environment:
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+    env_file: "./backend/.env"
+    volumes:
+      - ./docker/stripe/run.sh:/run.sh:ro
+      # Persist Stripe CLI configuration
+      - stripe_cli_config:/root/.config/stripe
+
+    # No ports needed - this container communicates internally
+
 volumes:
   postgres_data:
+  stripe_cli_config:

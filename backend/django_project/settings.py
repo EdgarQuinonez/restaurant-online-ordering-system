@@ -27,6 +27,11 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
 
+## Stripe
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
 # CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
@@ -39,6 +44,7 @@ INSTALLED_APPS = [
     "menu.apps.MenuConfig",
     "delivery.apps.DeliveryConfig",
     "backoffice.apps.BackofficeConfig",
+    "payments.apps.PaymentsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

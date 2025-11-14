@@ -35,6 +35,7 @@ router.register(r"employees", EmployeeViewSet)  # Add employee endpoints
 urlpatterns = [
     path("", include(router.urls)),
     path("admin/", admin.site.urls),
+    path("payments/", include("payments.urls")),
     path("api-auth/", include("rest_framework.urls")),
     path(
         "api-token-auth/", obtain_auth_token, name="api_token_auth"
