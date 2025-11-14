@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '@environment';
 import {
@@ -26,12 +26,11 @@ export class OrderService {
   /**
    * Get all orders for the current device (anonymous user)
    */
-  getMyOrders$(): Observable<LoadingState<OrdersResponse>> {
+  getMyOrders$(pageUrl?: string): Observable<LoadingState<OrdersResponse>> {
     return of(null).pipe(
       switchMapWithLoading(() => {
-        return this.http.get<OrdersResponse>(
-          `${this.ORDERS_ENDPOINT}my-orders/`,
-        );
+        const url = pageUrl || `${this.ORDERS_ENDPOINT}my-orders/`;
+        return this.http.get<OrdersResponse>(url);
       }),
     );
   }
@@ -41,24 +40,54 @@ export class OrderService {
    */
   getOrderById$(orderId: number): Observable<OrderByIdResponse> {
     return this.http.get<OrderByIdResponse>(
-      `${this.ORDERS_ENDPOINT}${orderId}`,
+      `${this.ORDERS_ENDPOINT}${orderId}/`,
     );
   }
 
   /**
    * Get all orders (admin functionality - may require authentication)
    */
-  getAllOrders$(params?: {
-    status?: string;
-    date?: string;
-    order_number?: string;
-    customer_phone?: string;
-  }): Observable<LoadingState<AllOrdersResponse>> {
+  getAllOrders$(
+    params?: {
+      status?: string;
+      date?: string;
+      order_number?: string;
+      customer_phone?: string;
+      page?: number;
+      page_size?: number;
+    },
+    pageUrl?: string,
+  ): Observable<LoadingState<AllOrdersResponse>> {
     return of(null).pipe(
       switchMapWithLoading(() => {
-        return this.http.get<AllOrdersResponse>(this.ORDERS_ENDPOINT, {
-          params,
-        });
+        if (pageUrl) {
+          // Use the provided page URL for pagination
+          return this.http.get<AllOrdersResponse>(pageUrl);
+        } else {
+          // Build params for initial request
+          let httpParams = new HttpParams();
+          if (params?.status)
+            httpParams = httpParams.set('status', params.status);
+          if (params?.date) httpParams = httpParams.set('date', params.date);
+          if (params?.order_number)
+            httpParams = httpParams.set('order_number', params.order_number);
+          if (params?.customer_phone)
+            httpParams = httpParams.set(
+              'customer_phone',
+              params.customer_phone,
+            );
+          if (params?.page)
+            httpParams = httpParams.set('page', params.page.toString());
+          if (params?.page_size)
+            httpParams = httpParams.set(
+              'page_size',
+              params.page_size.toString(),
+            );
+
+          return this.http.get<AllOrdersResponse>(this.ORDERS_ENDPOINT, {
+            params: httpParams,
+          });
+        }
       }),
     );
   }
@@ -66,12 +95,22 @@ export class OrderService {
   /**
    * Search orders by various criteria (admin functionality)
    */
-  searchOrders$(query: string): Observable<LoadingState<OrdersResponse>> {
+  searchOrders$(
+    query: string,
+    pageUrl?: string,
+  ): Observable<LoadingState<OrdersResponse>> {
     return of(null).pipe(
       switchMapWithLoading(() => {
-        return this.http.get<OrdersResponse>(`${this.ORDERS_ENDPOINT}search/`, {
-          params: { q: query },
-        });
+        if (pageUrl) {
+          return this.http.get<OrdersResponse>(pageUrl);
+        } else {
+          return this.http.get<OrdersResponse>(
+            `${this.ORDERS_ENDPOINT}search/`,
+            {
+              params: { q: query },
+            },
+          );
+        }
       }),
     );
   }
@@ -109,28 +148,88 @@ export class OrderService {
   }
 
   /**
-   * Get order history with device ID tracking
-   * This combines device ID check and order retrieval
+   * Load a specific page by URL (for pagination)
    */
-  // getOrderHistory$(): Observable<LoadingState<OrdersResponse>> {
-  //   return of(null).pipe(
-  //     switchMapWithLoading(() => {
-  //       if (!this.deviceIdService.hasDeviceId()) {
-  //         // Return empty orders if no device ID exists
-  //         return of({
-  //           success: true,
-  //           count: 0,
-  //           orders: [],
-  //           detail: 'No device ID found. Please place an order first.',
-  //         });
-  //       }
-  //       return this.http.get<OrdersResponse>(
-  //         `${this.ORDERS_ENDPOINT}my-orders/`,
-  //       );
-  //     }),
-  //   );
-  // }
-  //
+  loadPage$(pageUrl: string): Observable<LoadingState<OrdersResponse>> {
+    return of(null).pipe(
+      switchMapWithLoading(() => {
+        return this.http.get<OrdersResponse>(pageUrl);
+      }),
+    );
+  }
+
+  /**
+   * Get orders with pagination support
+   */
+  getOrdersWithPagination$(
+    endpoint: 'my-orders' | 'all' | 'search',
+    options?: {
+      query?: string;
+      params?: {
+        status?: string;
+        date?: string;
+        order_number?: string;
+        customer_phone?: string;
+        page?: number;
+        page_size?: number;
+      };
+      pageUrl?: string;
+    },
+  ): Observable<LoadingState<OrdersResponse | AllOrdersResponse>> {
+    return of(null).pipe(
+      switchMapWithLoading(() => {
+        const { pageUrl, query, params } = options || {};
+
+        if (pageUrl) {
+          return this.http.get<OrdersResponse | AllOrdersResponse>(pageUrl);
+        }
+
+        switch (endpoint) {
+          case 'my-orders':
+            return this.http.get<OrdersResponse>(
+              `${this.ORDERS_ENDPOINT}my-orders/`,
+            );
+
+          case 'search':
+            if (!query) {
+              throw new Error('Query parameter is required for search');
+            }
+            return this.http.get<OrdersResponse>(
+              `${this.ORDERS_ENDPOINT}search/`,
+              {
+                params: { q: query },
+              },
+            );
+
+          case 'all':
+          default:
+            let httpParams = new HttpParams();
+            if (params?.status)
+              httpParams = httpParams.set('status', params.status);
+            if (params?.date) httpParams = httpParams.set('date', params.date);
+            if (params?.order_number)
+              httpParams = httpParams.set('order_number', params.order_number);
+            if (params?.customer_phone)
+              httpParams = httpParams.set(
+                'customer_phone',
+                params.customer_phone,
+              );
+            if (params?.page)
+              httpParams = httpParams.set('page', params.page.toString());
+            if (params?.page_size)
+              httpParams = httpParams.set(
+                'page_size',
+                params.page_size.toString(),
+              );
+
+            return this.http.get<AllOrdersResponse>(this.ORDERS_ENDPOINT, {
+              params: httpParams,
+            });
+        }
+      }),
+    );
+  }
+
   /**
    * Check if user has any orders
    */
@@ -146,7 +245,7 @@ export class OrderService {
             .get<OrdersResponse>(`${this.ORDERS_ENDPOINT}my-orders/`)
             .subscribe({
               next: (response) => {
-                observer.next(response.success && response.count > 0);
+                observer.next(response.count > 0);
                 observer.complete();
               },
               error: () => {
@@ -163,8 +262,9 @@ export class OrderService {
   /**
    * Get all orders for the current device (anonymous user) - legacy version
    */
-  getMyOrders(): Observable<OrdersResponse> {
-    return this.http.get<OrdersResponse>(`${this.ORDERS_ENDPOINT}my-orders/`);
+  getMyOrders(pageUrl?: string): Observable<OrdersResponse> {
+    const url = pageUrl || `${this.ORDERS_ENDPOINT}my-orders/`;
+    return this.http.get<OrdersResponse>(url);
   }
 
   /**
@@ -179,13 +279,49 @@ export class OrderService {
   /**
    * Get all orders (admin functionality) - legacy version
    */
-  getAllOrders(params?: {
-    status?: string;
-    date?: string;
-    order_number?: string;
-    customer_phone?: string;
-  }): Observable<OrdersResponse> {
-    return this.http.get<OrdersResponse>(this.ORDERS_ENDPOINT, { params });
+  getAllOrders(
+    params?: {
+      status?: string;
+      date?: string;
+      order_number?: string;
+      customer_phone?: string;
+      page?: number;
+      page_size?: number;
+    },
+    pageUrl?: string,
+  ): Observable<OrdersResponse> {
+    if (pageUrl) {
+      return this.http.get<OrdersResponse>(pageUrl);
+    } else {
+      let httpParams = new HttpParams();
+      if (params?.status) httpParams = httpParams.set('status', params.status);
+      if (params?.date) httpParams = httpParams.set('date', params.date);
+      if (params?.order_number)
+        httpParams = httpParams.set('order_number', params.order_number);
+      if (params?.customer_phone)
+        httpParams = httpParams.set('customer_phone', params.customer_phone);
+      if (params?.page)
+        httpParams = httpParams.set('page', params.page.toString());
+      if (params?.page_size)
+        httpParams = httpParams.set('page_size', params.page_size.toString());
+
+      return this.http.get<OrdersResponse>(this.ORDERS_ENDPOINT, {
+        params: httpParams,
+      });
+    }
+  }
+
+  /**
+   * Search orders by various criteria - legacy version
+   */
+  searchOrders(query: string, pageUrl?: string): Observable<OrdersResponse> {
+    if (pageUrl) {
+      return this.http.get<OrdersResponse>(pageUrl);
+    } else {
+      return this.http.get<OrdersResponse>(`${this.ORDERS_ENDPOINT}search/`, {
+        params: { q: query },
+      });
+    }
   }
 
   /**
@@ -201,7 +337,7 @@ export class OrderService {
 
       this.getMyOrders().subscribe({
         next: (response) => {
-          observer.next(response.success && response.count > 0);
+          observer.next(response.count > 0);
           observer.complete();
         },
         error: () => {

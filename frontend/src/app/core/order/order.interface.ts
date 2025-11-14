@@ -16,16 +16,13 @@ export interface CustomerInfo {
 }
 
 export interface OrdersResponse {
-  success: boolean;
   count: number;
   results: Order[];
-  customer?: CustomerInfo;
   next?: string;
   previous?: string;
 }
 
 export interface AllOrdersResponse {
-  success: true;
   count: number;
   results: FullOrder[];
   next?: string;
