@@ -1,112 +1,313 @@
 <div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">Gestión de Pedidos</h1>
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">Order Management</h1>
 
-  @if (loadingState(); as state) {
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      @if (state.loading) {
-        <!-- Loading Skeleton -->
-        <div class="p-4">
-          @for (i of [1, 2, 3, 4, 5]; track i) {
-            <div class="flex items-center space-x-4 mb-4">
-              <p-skeleton width="100px" height="2rem"></p-skeleton>
-              <p-skeleton width="150px" height="2rem"></p-skeleton>
-              <p-skeleton width="200px" height="2rem"></p-skeleton>
-              <p-skeleton width="120px" height="2rem"></p-skeleton>
+  <!-- Orders Observable -->
+  @if (orders | async; as orderState) {
+    <!-- Loading State -->
+    @if (orderState.loading) {
+      <div
+        class="flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow-sm border border-gray-200"
+      >
+        <p-progress-spinner
+          strokeWidth="8"
+          fill="transparent"
+          animationDuration=".5s"
+          [style]="{ width: '50px', height: '50px' }"
+          class="mb-4"
+        />
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Loading Orders</h3>
+        <p class="text-gray-600">Please wait while we load the orders...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (orderState.error && !orderState.loading) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <i class="pi pi-exclamation-triangle text-2xl text-red-500 mt-1"></i>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-red-800 mb-2">
+              Error Loading Orders
+            </h3>
+            <p class="text-red-700 mb-4">
+              {{
+                orderState.error.detail ||
+                  orderState.error.message ||
+                  orderState.error ||
+                  "An unexpected error occurred"
+              }}
+            </p>
+            <p-button
+              label="Retry"
+              icon="pi pi-refresh"
+              severity="danger"
+              (onClick)="refreshOrders()"
+            >
+            </p-button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Success State with Data -->
+    @if (orderState.data && !orderState.loading) {
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- Orders Summary Header -->
+        <div
+          class="flex justify-between items-center bg-blue-50 rounded-t-lg p-4 border-b border-blue-100"
+        >
+          <div>
+            <h3 class="text-lg font-semibold text-blue-900">
+              {{ orderState.data.count }}
+              {{ orderState.data.count === 1 ? "order" : "orders" }} found
+            </h3>
+            <p class="text-blue-700 text-sm">
+              {{ getPageInfo() }}
+            </p>
+          </div>
+
+          <!-- Refresh Button -->
+          <p-button
+            label="Refresh"
+            icon="pi pi-refresh"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="refreshOrders()"
+          >
+          </p-button>
+        </div>
+
+        <!-- Empty State -->
+        @if (orderState.data.count === 0) {
+          <div class="text-center py-16">
+            <i class="pi pi-inbox text-6xl text-gray-400 mb-6"></i>
+            <h3 class="text-2xl font-semibold text-gray-900 mb-3">
+              No Orders Found
+            </h3>
+            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+              There are no orders in the system yet. Orders will appear here
+              once customers start placing them.
+            </p>
+          </div>
+        }
+
+        <!-- Orders Table -->
+        @if (orderState.data.count > 0) {
+          <div class="overflow-x-auto">
+            <p-table
+              [value]="orderState.data.results"
+              [tableStyle]="{ 'min-width': '100rem' }"
+              class="w-full"
+            >
+              <ng-template pTemplate="header">
+                <tr class="bg-gray-50">
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Order #
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Customer
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Contact
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Address
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Total
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Created
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Items
+                  </th>
+                  <th class="text-left p-4 font-semibold text-gray-700">
+                    Instructions
+                  </th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-order>
+                <tr
+                  class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  <!-- Order Number -->
+                  <td class="p-4 text-gray-900 font-medium">
+                    {{ order.order_number || "N/A" }}
+                  </td>
+
+                  <!-- Customer Info -->
+                  <td class="p-4 text-gray-700">
+                    <div class="flex flex-col">
+                      <span class="font-medium">{{
+                        getCustomerName(order)
+                      }}</span>
+                      <span class="text-sm text-gray-500">{{
+                        getCustomerEmail(order)
+                      }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Contact Info -->
+                  <td class="p-4 text-gray-700">
+                    {{ getCustomerPhone(order) }}
+                  </td>
+
+                  <!-- Address -->
+                  <td class="p-4 text-gray-700 text-sm max-w-[200px]">
+                    {{ getAddressInfo(order) }}
+                  </td>
+
+                  <!-- Total Amount -->
+                  <td class="p-4 text-gray-900 font-semibold">
+                    {{ formatCurrency(order.total_amount) }}
+                  </td>
+
+                  <!-- Created Date -->
+                  <td class="p-4 text-gray-600 text-sm">
+                    {{ formatDate(order.created_at) }}
+                  </td>
+
+                  <!-- Status -->
+                  <td class="p-4">
+                    <div class="flex items-center gap-2">
+                      <p-badge
+                        [value]="getStatusDisplay(order.status)"
+                        [severity]="getStatusSeverity(order.status)"
+                        class="text-xs"
+                      >
+                      </p-badge>
+                      <p-select
+                        [options]="statusOptions"
+                        [(ngModel)]="order.status"
+                        (onChange)="onStatusChange(order, $event.value)"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="w-32"
+                        [loading]="updatingOrderId() === order.id"
+                      >
+                        <ng-template pTemplate="dropdownicon">
+                          <span
+                            class="pi pi-chevron-down text-gray-500 text-xs"
+                          ></span>
+                        </ng-template>
+                      </p-select>
+                    </div>
+                  </td>
+
+                  <!-- Order Items -->
+                  <td class="p-4 text-gray-600 text-sm">
+                    <div class="flex flex-col gap-1">
+                      <span>{{ order.order_items?.length || 0 }} items</span>
+                      @if (order.order_items && order.order_items.length > 0) {
+                        <div class="text-xs text-gray-500">
+                          @for (
+                            item of order.order_items.slice(0, 2);
+                            track item.id
+                          ) {
+                            <div>
+                              {{ item.quantity }}x {{ item.item_name }} ({{
+                                item.size_name
+                              }})
+                            </div>
+                          }
+                          @if (order.order_items.length > 2) {
+                            <div>+{{ order.order_items.length - 2 }} more</div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- Special Instructions -->
+                  <td class="p-4 text-gray-600 text-sm max-w-[200px]">
+                    {{ getSpecialInstructions(order) }}
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="9" class="text-center p-8 text-gray-500">
+                    No orders found
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+          <!-- Pagination Controls -->
+          @if (orderState.data.next || orderState.data.previous) {
+            <div
+              class="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg"
+            >
+              <!-- Previous Button -->
+              <div>
+                @if (canLoadPrevious()) {
+                  <p-button
+                    label="Previous"
+                    icon="pi pi-chevron-left"
+                    severity="secondary"
+                    [outlined]="true"
+                    (onClick)="loadPage('previous')"
+                    [disabled]="orderState.loading"
+                  >
+                  </p-button>
+                }
+              </div>
+
+              <!-- Page Info -->
+              <div class="text-center">
+                <span class="text-gray-700 font-medium">{{
+                  getPageInfo()
+                }}</span>
+              </div>
+
+              <!-- Next Button -->
+              <div>
+                @if (canLoadNext()) {
+                  <p-button
+                    label="Next"
+                    icon="pi pi-chevron-right"
+                    iconPos="right"
+                    severity="secondary"
+                    [outlined]="true"
+                    (onClick)="loadPage('next')"
+                    [disabled]="orderState.loading"
+                  >
+                  </p-button>
+                }
+              </div>
             </div>
           }
-        </div>
-      } @else if (state.error) {
-        <!-- Error State -->
-        <div class="p-6 text-center">
-          <div class="text-red-600 text-lg mb-2">Error loading orders</div>
-          <p class="text-gray-600 mb-4">{{ state.error }}</p>
-          <button
-            (click)="loadOrders()"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      } @else if (state.data) {
-        <!-- Orders Table -->
-        <p-table
-          [value]="state.data.results"
-          [paginator]="true"
-          [rows]="25"
-          [rowsPerPageOptions]="[10, 25]"
-          [tableStyle]="{ 'min-width': '70rem' }"
-          class="w-full"
+        }
+      </div>
+    }
+
+    <!-- No Data State -->
+    @if (!orderState.data && !orderState.loading && !orderState.error) {
+      <div
+        class="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200"
+      >
+        <i class="pi pi-inbox text-6xl text-gray-400 mb-6"></i>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-3">
+          No Data Available
+        </h3>
+        <p class="text-gray-600 mb-6">
+          Unable to load order data. Please try again.
+        </p>
+        <p-button
+          label="Try Again"
+          icon="pi pi-refresh"
+          (onClick)="refreshOrders()"
+          severity="secondary"
         >
-          <ng-template pTemplate="header">
-            <tr class="bg-gray-50">
-              <th class="text-left p-4 font-semibold text-gray-700">Order #</th>
-              <th class="text-left p-4 font-semibold text-gray-700">
-                Customer
-              </th>
-              <th class="text-left p-4 font-semibold text-gray-700">Phone</th>
-              <th class="text-left p-4 font-semibold text-gray-700">Total</th>
-              <th class="text-left p-4 font-semibold text-gray-700">Created</th>
-              <th class="text-left p-4 font-semibold text-gray-700">Status</th>
-              <th class="text-left p-4 font-semibold text-gray-700">Items</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-order>
-            <tr
-              class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <td class="p-4 text-gray-900 font-medium">
-                {{ order.order_number || "N/A" }}
-              </td>
-              <td class="p-4 text-gray-700">
-                {{ order.customer_name || "Anonymous" }}
-              </td>
-              <td class="p-4 text-gray-700">
-                {{ order.customer_phone || "N/A" }}
-              </td>
-              <td class="p-4 text-gray-900 font-semibold">
-                ${{ order.total_amount || "0.00" }}
-              </td>
-              <td class="p-4 text-gray-600 text-sm">
-                {{ formatDate(order.created_at) }}
-              </td>
-              <td class="p-4">
-                <p-select
-                  [options]="statusOptions"
-                  [(ngModel)]="order.status"
-                  (onChange)="onStatusChange(order, $event.value)"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select Status"
-                  class="w-full min-w-[180px]"
-                  [loading]="updatingOrderId() === order.id"
-                >
-                  <ng-template pTemplate="dropdownicon">
-                    <span class="pi pi-chevron-down text-gray-500"></span>
-                  </ng-template>
-                </p-select>
-              </td>
-              <td class="p-4 text-gray-600">
-                {{ order.items?.length || 0 }} items
-              </td>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="paginatorleft">
-            <span class="text-gray-600 text-sm">
-              Total: {{ state.data.count }} orders
-            </span>
-          </ng-template>
-
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="7" class="text-center p-8 text-gray-500">
-                No orders found
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      }
-    </div>
+        </p-button>
+      </div>
+    }
   }
 </div>

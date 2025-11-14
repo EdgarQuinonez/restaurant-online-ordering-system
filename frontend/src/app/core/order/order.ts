@@ -12,8 +12,7 @@ import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { DrawerModule } from 'primeng/drawer';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, Subject, tap } from 'rxjs';
 
 import { OrderService } from './order.service';
 import { LoadingState } from '@utils/switchMapWithLoading';
@@ -56,23 +55,20 @@ export class OrderComponent implements OnInit, OnDestroy {
    * Load orders - either initial load or specific page
    */
   private loadOrders(pageUrl?: string): void {
-    this.orders = this.orderService.getMyOrders$(pageUrl);
-
-    // Subscribe to store the current data for pagination calculations
-    // this.orders.pipe(takeUntil(this.destroy$)).subscribe({
-    //   next: (state) => {
-    //     if (state.data) {
-    //       this.currentOrdersData = state.data;
-    //       // Store the current page URL based on the response
-    //       if (pageUrl) {
-    //         this.currentPageUrl = pageUrl;
-    //       } else {
-    //         // For initial load, we're on the first page
-    //         this.currentPageUrl = null;
-    //       }
-    //     }
-    //   },
-    // });
+    this.orders = this.orderService.getMyOrders$(pageUrl).pipe(
+      tap((state) => {
+        if (state.data) {
+          this.currentOrdersData = state.data;
+          // Store the current page URL based on the response
+          if (pageUrl) {
+            this.currentPageUrl = pageUrl;
+          } else {
+            // For initial load, we're on the first page
+            this.currentPageUrl = null;
+          }
+        }
+      }),
+    );
   }
 
   /**
