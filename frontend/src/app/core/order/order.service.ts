@@ -112,25 +112,25 @@ export class OrderService {
    * Get order history with device ID tracking
    * This combines device ID check and order retrieval
    */
-  getOrderHistory$(): Observable<LoadingState<OrdersResponse>> {
-    return of(null).pipe(
-      switchMapWithLoading(() => {
-        if (!this.deviceIdService.hasDeviceId()) {
-          // Return empty orders if no device ID exists
-          return of({
-            success: true,
-            count: 0,
-            orders: [],
-            detail: 'No device ID found. Please place an order first.',
-          });
-        }
-        return this.http.get<OrdersResponse>(
-          `${this.ORDERS_ENDPOINT}my-orders/`,
-        );
-      }),
-    );
-  }
-
+  // getOrderHistory$(): Observable<LoadingState<OrdersResponse>> {
+  //   return of(null).pipe(
+  //     switchMapWithLoading(() => {
+  //       if (!this.deviceIdService.hasDeviceId()) {
+  //         // Return empty orders if no device ID exists
+  //         return of({
+  //           success: true,
+  //           count: 0,
+  //           orders: [],
+  //           detail: 'No device ID found. Please place an order first.',
+  //         });
+  //       }
+  //       return this.http.get<OrdersResponse>(
+  //         `${this.ORDERS_ENDPOINT}my-orders/`,
+  //       );
+  //     }),
+  //   );
+  // }
+  //
   /**
    * Check if user has any orders
    */

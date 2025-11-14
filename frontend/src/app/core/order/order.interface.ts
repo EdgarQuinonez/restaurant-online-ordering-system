@@ -18,14 +18,18 @@ export interface CustomerInfo {
 export interface OrdersResponse {
   success: boolean;
   count: number;
-  orders: Order[];
+  results: Order[];
   customer?: CustomerInfo;
+  next?: string;
+  previous?: string;
 }
 
 export interface AllOrdersResponse {
   success: true;
   count: number;
-  orders: FullOrder[];
+  results: FullOrder[];
+  next?: string;
+  previous?: string;
 }
 
 // Response for getting order by ID

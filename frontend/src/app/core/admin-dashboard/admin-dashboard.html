@@ -30,10 +30,10 @@
       } @else if (state.data) {
         <!-- Orders Table -->
         <p-table
-          [value]="state.data.orders"
+          [value]="state.data.results"
           [paginator]="true"
           [rows]="25"
-          [rowsPerPageOptions]="[10, 25, 50, 100]"
+          [rowsPerPageOptions]="[10, 25]"
           [tableStyle]="{ 'min-width': '70rem' }"
           class="w-full"
         >

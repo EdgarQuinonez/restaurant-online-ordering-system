@@ -2,6 +2,7 @@ from django.db import models
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
@@ -11,9 +12,16 @@ from .models import Customer, Order
 from .serializers import OrderListSerializer, OrderSerializer
 
 
+class OrderPagination(PageNumberPagination):
+    page_size = 25
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    pagination_class = OrderPagination
 
     permission_classes_by_action = {
         "create": [AllowAny],
@@ -200,6 +208,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Order by most recent first
         queryset = queryset.order_by("-created_at")
 
+        # Use pagination
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -233,6 +242,22 @@ class OrderViewSet(viewsets.ModelViewSet):
 
             # Use simplified serializer for listing
             serializer = OrderListSerializer(orders, many=True)
+
+            # Apply pagination to my_orders
+            page = self.paginate_queryset(orders)
+            if page is not None:
+                serializer = OrderListSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+                # return self.get_paginated_response(
+                #     {
+                #         "success": True,
+                #         "orders": serializer.data,
+                #         "customer": {
+                #             "device_id": str(customer.device_id),
+                #             "created_at": customer.created_at,
+                #         },
+                #     }
+                # )
 
             return Response(
                 {
