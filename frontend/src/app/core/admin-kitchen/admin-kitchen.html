@@ -1,1 +1,395 @@
-<p>admin-kitchen works!</p>
+<div class="h-screen bg-gray-50 flex flex-col">
+  <!-- Toast Component -->
+  <p-toast position="top-right"></p-toast>
+
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-gray-200 p-4">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+          Cocina - Pedidos Pendientes
+        </h1>
+        <p class="text-gray-600">Gestiona y prepara los pedidos pendientes</p>
+      </div>
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="refreshOrders()"
+        [loading]="loading()"
+      >
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Orders List Sidebar -->
+    <div
+      class="max-h-full overflow-y-auto w-80 bg-white border-r border-gray-200 flex flex-col"
+    >
+      <!-- Orders List Header -->
+      <div class="p-4 border-b border-gray-200 bg-gray-50">
+        <h2 class="text-lg font-semibold text-gray-900">Pedidos Pendientes</h2>
+        <p class="text-sm text-gray-600">
+          Selecciona un pedido para ver detalles
+        </p>
+      </div>
+
+      <!-- Orders List -->
+      <div class="flex-1 overflow-y-auto">
+        @if (pendingOrders | async; as ordersState) {
+          <!-- Loading State -->
+          @if (ordersState.loading) {
+            <div class="flex flex-col items-center justify-center p-8">
+              <p-progress-spinner
+                strokeWidth="8"
+                fill="transparent"
+                animationDuration=".5s"
+                [style]="{ width: '40px', height: '40px' }"
+                class="mb-4"
+              />
+              <p class="text-gray-600">Cargando pedidos...</p>
+            </div>
+          }
+
+          <!-- Error State -->
+          @if (ordersState.error && !ordersState.loading) {
+            <div class="p-4 text-center">
+              <i
+                class="pi pi-exclamation-triangle text-2xl text-red-500 mb-2"
+              ></i>
+              <p class="text-red-700 mb-4">Error al cargar pedidos</p>
+              <p-button
+                label="Reintentar"
+                icon="pi pi-refresh"
+                severity="danger"
+                [text]="true"
+                (onClick)="refreshOrders()"
+              >
+              </p-button>
+            </div>
+          }
+
+          <!-- Orders List Content -->
+          @if (ordersState.data && !ordersState.loading) {
+            <!-- Empty State -->
+            @if (ordersState.data.count === 0) {
+              <div class="text-center p-8">
+                <i class="pi pi-inbox text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                  No Hay Pedidos Pendientes
+                </h3>
+                <p class="text-gray-600 text-sm">
+                  Todos los pedidos están procesados
+                </p>
+              </div>
+            }
+
+            <!-- Orders List -->
+            @if (ordersState.data.count > 0) {
+              <div class="space-y-2 p-2">
+                @for (order of ordersState.data.results; track order.id) {
+                  <div
+                    (click)="setActiveOrder(order)"
+                    [class.bg-blue-50]="isActiveOrder(order)"
+                    [class.border-blue-200]="isActiveOrder(order)"
+                    [class.border-gray-200]="!isActiveOrder(order)"
+                    [class.opacity-50]="isOrderUpdating(order)"
+                    class="border rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition-all duration-150 relative"
+                  >
+                    <!-- Loading Overlay for Order Update -->
+                    @if (isOrderUpdating(order)) {
+                      <div
+                        class="absolute inset-0 bg-white bg-opacity-75 rounded-lg flex items-center justify-center"
+                      >
+                        <p-progress-spinner
+                          [style]="{ width: '30px', height: '30px' }"
+                          strokeWidth="6"
+                          class="text-blue-500"
+                        ></p-progress-spinner>
+                      </div>
+                    }
+
+                    <!-- Order Header -->
+                    <div class="flex justify-between items-start mb-2">
+                      <div class="w-1/2 text-wrap">
+                        <h3 class="font-semibold text-gray-900 text-sm">
+                          #{{ order.order_number }}
+                        </h3>
+                        <p class="text-xs text-gray-600">
+                          {{ formatDate(order.created_at) }}
+                        </p>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <p-badge
+                          [value]="getStatusDisplay(order.status)"
+                          [severity]="getStatusSeverity(order.status)"
+                          class="text-xs"
+                        >
+                        </p-badge>
+                        @if (isOrderUpdating(order)) {
+                          <i
+                            class="pi pi-spin pi-spinner text-blue-500 text-xs"
+                          ></i>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Customer Info -->
+                    <div class="mb-2">
+                      <p class="text-sm font-medium text-gray-900">
+                        {{ getCustomerName(order) }}
+                      </p>
+                      <p class="text-xs text-gray-600">
+                        {{ getCustomerPhone(order) }}
+                      </p>
+                    </div>
+
+                    <!-- Order Items Summary -->
+                    <div class="space-y-1">
+                      @for (
+                        item of order.order_items.slice(0, 2);
+                        track item.id
+                      ) {
+                        <div class="flex justify-between text-xs">
+                          <span class="text-gray-700">
+                            {{ item.quantity }}x {{ item.item_name }}
+                          </span>
+                          <span class="text-gray-500">
+                            {{ item.size_name }}
+                          </span>
+                        </div>
+                      }
+                      @if (order.order_items.length > 2) {
+                        <div class="text-xs text-gray-500 text-center">
+                          +{{ order.order_items.length - 2 }} artículos más
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Order Footer -->
+                    <div
+                      class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100"
+                    >
+                      <span class="text-sm font-semibold text-gray-900">
+                        {{ formatCurrency(order.total_amount) }}
+                      </span>
+                      <span class="text-xs text-gray-500">
+                        {{ getTotalItems(order) }} artículos
+                      </span>
+                    </div>
+
+                    <!-- Quick Action Button -->
+                    @if (isActiveOrder(order) && !isOrderUpdating(order)) {
+                      <div class="mt-2 pt-2 border-t border-gray-100">
+                        <button
+                          (click)="
+                            markOrderAsReady(order); $event.stopPropagation()
+                          "
+                          class="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-1 px-2 rounded transition-colors duration-150 flex items-center justify-center gap-1"
+                        >
+                          <i class="pi pi-check text-xs"></i>
+                          <span>Marcar Listo</span>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Order Details Main Pane -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      @if (activeOrder()) {
+        <!-- Order Details -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <!-- Order Header -->
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6"
+          >
+            <div class="p-6 border-b border-gray-200">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-3 mb-2">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                      Pedido #{{ activeOrder()!.order_number }}
+                    </h2>
+                    <div class="flex items-center gap-2">
+                      <p-badge
+                        [value]="getStatusDisplay(activeOrder()!.status)"
+                        [severity]="getStatusSeverity(activeOrder()!.status)"
+                      >
+                      </p-badge>
+                      @if (isOrderUpdating(activeOrder()!)) {
+                        <p-progress-spinner
+                          [style]="{ width: '20px', height: '20px' }"
+                          strokeWidth="4"
+                        ></p-progress-spinner>
+                      }
+                    </div>
+                  </div>
+                  <p class="text-gray-600">
+                    Creado: {{ formatDate(activeOrder()!.created_at) }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-gray-900">
+                    {{ formatCurrency(activeOrder()!.total_amount) }}
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    {{ getTotalItems(activeOrder()!) }} artículos
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="p-6 border-b border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Información del Cliente
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Nombre</p>
+                  <p class="text-gray-900">
+                    {{ getCustomerName(activeOrder()!) }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Teléfono</p>
+                  <p class="text-gray-900">
+                    {{ getCustomerPhone(activeOrder()!) }}
+                  </p>
+                </div>
+                <div class="md:col-span-2">
+                  <p class="text-sm font-medium text-gray-700">Dirección</p>
+                  <p class="text-gray-900">
+                    {{ getAddressInfo(activeOrder()!) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Special Instructions -->
+            @if (hasSpecialInstructions(activeOrder()!)) {
+              <div class="p-6 border-b border-gray-200 bg-yellow-50">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-2">
+                  Instrucciones Especiales
+                </h3>
+                <p class="text-yellow-700">
+                  {{ getSpecialInstructions(activeOrder()!) }}
+                </p>
+              </div>
+            }
+
+            <!-- Order Items -->
+            <div class="p-6">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Artículos del Pedido
+              </h3>
+              <div class="space-y-3">
+                @for (item of activeOrder()!.order_items; track item.id) {
+                  <div
+                    class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3">
+                        <span
+                          class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium"
+                        >
+                          {{ item.quantity }}
+                        </span>
+                        <div>
+                          <p class="font-medium text-gray-900">
+                            {{ item.item_name }}
+                          </p>
+                          <p class="text-sm text-gray-600">
+                            {{ item.size_name }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-semibold text-gray-900">
+                        {{ getItemSubtotal(item) }}
+                      </p>
+                      <p class="text-sm text-gray-600">
+                        {{ formatCurrency(item.price) }} c/u
+                      </p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Preparation Info -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+              Información de Preparación
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="text-center p-4 bg-blue-50 rounded-lg">
+                <p class="text-2xl font-bold text-blue-600">
+                  {{ getTotalItems(activeOrder()!) }}
+                </p>
+                <p class="text-sm text-blue-700">Artículos Totales</p>
+              </div>
+              <div class="text-center p-4 bg-orange-50 rounded-lg">
+                <p class="text-2xl font-bold text-orange-600">
+                  {{ getPreparationTime(activeOrder()!) }}
+                </p>
+                <p class="text-sm text-orange-700">Tiempo Estimado</p>
+              </div>
+              <div class="text-center p-4 bg-green-50 rounded-lg">
+                <p class="text-2xl font-bold text-green-600">
+                  {{ activeOrder()!.order_items.length }}
+                </p>
+                <p class="text-sm text-green-700">Tipos de Artículos</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-white border-t border-gray-200 p-4">
+          <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              Última actualización:
+              {{ formatDate(activeOrder()!.last_updated) }}
+            </div>
+            <div class="flex gap-3">
+              <p-button
+                label="Marcar como Listo para Entrega"
+                icon="pi pi-check"
+                severity="success"
+                (onClick)="markOrderAsReady(activeOrder()!)"
+                [loading]="isOrderUpdating(activeOrder()!)"
+                [disabled]="isOrderUpdating(activeOrder()!)"
+              >
+              </p-button>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <!-- No Order Selected State -->
+        <div class="flex-1 flex flex-col items-center justify-center p-8">
+          <i class="pi pi-shopping-bag text-6xl text-gray-400 mb-6"></i>
+          <h3 class="text-2xl font-semibold text-gray-900 mb-3">
+            Selecciona un Pedido
+          </h3>
+          <p class="text-gray-600 text-center max-w-md mb-6">
+            Elige un pedido de la lista lateral para ver los detalles completos
+            y comenzar la preparación.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
