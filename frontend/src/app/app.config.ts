@@ -10,6 +10,7 @@ import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { deviceIdInterceptor } from '@interceptors/device-id-interceptor';
+import { tokenInterceptor } from '@interceptors/token-interceptor';
 
 deviceIdInterceptor;
 export const appConfig: ApplicationConfig = {
@@ -26,6 +27,8 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
-    provideHttpClient(withInterceptors([deviceIdInterceptor])),
+    provideHttpClient(
+      withInterceptors([tokenInterceptor, deviceIdInterceptor]),
+    ),
   ],
 };

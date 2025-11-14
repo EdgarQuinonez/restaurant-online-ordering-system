@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
+from backoffice.permissions import CanUpdateOrderStatus, IsManager
+
 from .models import Customer, Order
 from .serializers import OrderListSerializer, OrderSerializer
 
@@ -15,9 +17,9 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     permission_classes_by_action = {
         "create": [AllowAny],
-        "list": [AllowAny],
+        "list": [IsManager],
         "retrieve": [AllowAny],
-        "update_status": [AllowAny],
+        "update_status": [CanUpdateOrderStatus],
         "my_orders": [AllowAny],
         "default": [IsAdminUser],
     }
@@ -41,18 +43,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
 
         # For non-admin users, filter by device_id if provided
-        if not self.request.user.is_staff:
-            device_id = self.request.headers.get("X-Device-ID")
-            if device_id:
-                try:
-                    customer = Customer.objects.get(device_id=device_id)
-                    queryset = queryset.filter(customer=customer)
-                except Customer.DoesNotExist:
-                    # Return empty queryset if customer doesn't exist
-                    return Order.objects.none()
-            else:
-                # Return empty queryset if no device_id provided for anonymous user
-                return Order.objects.none()
+        # if not self.request.user.is_staff or not IsManager():
+        #
+        #     device_id = self.request.headers.get("X-Device-ID")
+        #     if device_id:
+        #         try:
+        #             customer = Customer.objects.get(device_id=device_id)
+        #             queryset = queryset.filter(customer=customer)
+        #         except Customer.DoesNotExist:
+        #             # Return empty queryset if customer doesn't exist
+        #             return Order.objects.none()
+        #     else:
+        #         # Return empty queryset if no device_id provided for anonymous user
+        #         return Order.objects.none()
 
         return queryset
 
@@ -294,12 +297,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         try:
             order = self.get_object()
 
-            # Check if user has permission to update this order
-            if not request.user.is_staff:
-                return Response(
-                    {"success": False, "detail": "Permission denied."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
+            # # Check if user has permission to update this order
+            # if not request.user.is_staff:
+            #     return Response(
+            #         {"success": False, "detail": "Permission denied."},
+            #         status=status.HTTP_403_FORBIDDEN,
+            #     )
 
             new_status = request.data.get("status")
 
@@ -369,12 +372,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["delete"], url_path="bulk_delete")
     def bulk_delete(self, request):
         # Only allow admin users to bulk delete
-        if not request.user.is_staff:
-            return Response(
-                {"success": False, "detail": "Permission denied."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
+        # if not request.user.is_staff:
+        #     return Response(
+        #         {"success": False, "detail": "Permission denied."},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
+        #
         order_ids = request.data.get("order_ids", [])
         if not order_ids:
             return Response(
@@ -410,11 +413,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         Search orders by customer name, phone, email, or order number
         """
         # Only allow admin users to search all orders
-        if not request.user.is_staff:
-            return Response(
-                {"success": False, "detail": "Permission denied."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # if not request.user.is_staff:
+        #     return Response(
+        #         {"success": False, "detail": "Permission denied."},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
 
         search_query = request.query_params.get("q", "").strip()
 
