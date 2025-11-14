@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '@environment';
 import {
+  AllOrdersResponse,
   OrderByIdResponse,
   OrdersResponse,
   UpdateOrderStatusResponse,
@@ -52,10 +53,12 @@ export class OrderService {
     date?: string;
     order_number?: string;
     customer_phone?: string;
-  }): Observable<LoadingState<OrdersResponse>> {
+  }): Observable<LoadingState<AllOrdersResponse>> {
     return of(null).pipe(
       switchMapWithLoading(() => {
-        return this.http.get<OrdersResponse>(this.ORDERS_ENDPOINT, { params });
+        return this.http.get<AllOrdersResponse>(this.ORDERS_ENDPOINT, {
+          params,
+        });
       }),
     );
   }

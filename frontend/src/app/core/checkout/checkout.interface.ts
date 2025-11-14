@@ -159,8 +159,6 @@ export type OrderResponse =
   | OrderResponseBadRequest
   | OrderResponseError;
 
-export type OrderStatus = 'pending' | 'assigned' | 'picked' | 'delivered';
-
 // Helper type guards for response discrimination
 export function isOrderResponseSuccess(
   response: OrderResponse,

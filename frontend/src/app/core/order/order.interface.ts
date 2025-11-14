@@ -22,6 +22,12 @@ export interface OrdersResponse {
   customer?: CustomerInfo;
 }
 
+export interface AllOrdersResponse {
+  success: true;
+  count: number;
+  orders: FullOrder[];
+}
+
 // Response for getting order by ID
 export interface OrderByIdResponse {
   success: true;

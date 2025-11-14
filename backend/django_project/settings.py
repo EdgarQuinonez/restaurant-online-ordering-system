@@ -38,6 +38,7 @@ CORS_ALLOW_HEADERS = [*default_headers, "x-device-id"]
 INSTALLED_APPS = [
     "menu.apps.MenuConfig",
     "delivery.apps.DeliveryConfig",
+    "backoffice.apps.BackofficeConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
 ]
 
 MIDDLEWARE = [

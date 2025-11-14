@@ -1,0 +1,112 @@
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">Gestión de Pedidos</h1>
+
+  @if (loadingState(); as state) {
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      @if (state.loading) {
+        <!-- Loading Skeleton -->
+        <div class="p-4">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="flex items-center space-x-4 mb-4">
+              <p-skeleton width="100px" height="2rem"></p-skeleton>
+              <p-skeleton width="150px" height="2rem"></p-skeleton>
+              <p-skeleton width="200px" height="2rem"></p-skeleton>
+              <p-skeleton width="120px" height="2rem"></p-skeleton>
+            </div>
+          }
+        </div>
+      } @else if (state.error) {
+        <!-- Error State -->
+        <div class="p-6 text-center">
+          <div class="text-red-600 text-lg mb-2">Error loading orders</div>
+          <p class="text-gray-600 mb-4">{{ state.error }}</p>
+          <button
+            (click)="loadOrders()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      } @else if (state.data) {
+        <!-- Orders Table -->
+        <p-table
+          [value]="state.data.orders"
+          [paginator]="true"
+          [rows]="25"
+          [rowsPerPageOptions]="[10, 25, 50, 100]"
+          [tableStyle]="{ 'min-width': '70rem' }"
+          class="w-full"
+        >
+          <ng-template pTemplate="header">
+            <tr class="bg-gray-50">
+              <th class="text-left p-4 font-semibold text-gray-700">Order #</th>
+              <th class="text-left p-4 font-semibold text-gray-700">
+                Customer
+              </th>
+              <th class="text-left p-4 font-semibold text-gray-700">Phone</th>
+              <th class="text-left p-4 font-semibold text-gray-700">Total</th>
+              <th class="text-left p-4 font-semibold text-gray-700">Created</th>
+              <th class="text-left p-4 font-semibold text-gray-700">Status</th>
+              <th class="text-left p-4 font-semibold text-gray-700">Items</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-order>
+            <tr
+              class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+            >
+              <td class="p-4 text-gray-900 font-medium">
+                {{ order.order_number || "N/A" }}
+              </td>
+              <td class="p-4 text-gray-700">
+                {{ order.customer_name || "Anonymous" }}
+              </td>
+              <td class="p-4 text-gray-700">
+                {{ order.customer_phone || "N/A" }}
+              </td>
+              <td class="p-4 text-gray-900 font-semibold">
+                ${{ order.total_amount || "0.00" }}
+              </td>
+              <td class="p-4 text-gray-600 text-sm">
+                {{ formatDate(order.created_at) }}
+              </td>
+              <td class="p-4">
+                <p-select
+                  [options]="statusOptions"
+                  [(ngModel)]="order.status"
+                  (onChange)="onStatusChange(order, $event.value)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select Status"
+                  class="w-full min-w-[180px]"
+                  [loading]="updatingOrderId() === order.id"
+                >
+                  <ng-template pTemplate="dropdownicon">
+                    <span class="pi pi-chevron-down text-gray-500"></span>
+                  </ng-template>
+                </p-select>
+              </td>
+              <td class="p-4 text-gray-600">
+                {{ order.items?.length || 0 }} items
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="paginatorleft">
+            <span class="text-gray-600 text-sm">
+              Total: {{ state.data.count }} orders
+            </span>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center p-8 text-gray-500">
+                No orders found
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </div>
+  }
+</div>

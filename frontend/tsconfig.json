@@ -20,6 +20,7 @@
       "@pages/*": ["./src/app/pages/*"],
       "@services/*": ["./src/app/shared/services/*"],
       "@interceptors/*": ["./src/app/shared/interceptors/*"],
+      "@guards/*": ["./src/app/shared/guards/*"],
       "@utils/*": ["./src/app/shared/utils/*"],
       "@environment": ["./src/environments/environment.ts"]
     }
