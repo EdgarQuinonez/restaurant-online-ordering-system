@@ -22,7 +22,8 @@
       "@interceptors/*": ["./src/app/shared/interceptors/*"],
       "@guards/*": ["./src/app/shared/guards/*"],
       "@utils/*": ["./src/app/shared/utils/*"],
-      "@environment": ["./src/environments/environment.ts"]
+      "@environment": ["./src/environments/environment.ts"],
+      "@types": ["./src/app/shared/types.ts"]
     }
   },
   "angularCompilerOptions": {

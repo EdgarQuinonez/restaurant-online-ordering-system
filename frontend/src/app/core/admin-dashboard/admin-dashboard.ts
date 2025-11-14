@@ -17,13 +17,23 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 import { OrderService } from '@core/order/order.service';
 import { AllOrdersResponse } from '@core/order/order.interface';
 import { Order } from '@core/checkout/checkout.interface';
 import { LoadingState } from '@utils/switchMapWithLoading';
-import { Observable, Subject, tap } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  tap,
+  debounceTime,
+  distinctUntilChanged,
+} from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { OrderStatus } from '@types';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -40,6 +50,9 @@ import { takeUntil } from 'rxjs/operators';
     AsyncPipe,
     DatePipe,
     RouterLink,
+    InputTextModule,
+    IconFieldModule,
+    InputIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -52,38 +65,77 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private currentPageUrl: string | null = null;
 
   readonly updatingOrderId = signal<number | null>(null);
+  readonly searchQuery = signal<string>('');
+  readonly searchSubject = new Subject<string>();
 
   readonly statusOptions = [
-    { label: 'Pending', value: 'pending' },
-    { label: 'Confirmed', value: 'confirmed' },
-    { label: 'Processing', value: 'processing' },
-    { label: 'Ready', value: 'ready' },
-    { label: 'Completed', value: 'completed' },
-    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'Pendiente', value: 'pending' },
+    { label: 'Asignado', value: 'assigned' },
+    { label: 'Recogido', value: 'picked' },
+    { label: 'Entregado', value: 'delivered' },
   ];
 
   ngOnInit(): void {
+    this.setupSearchDebounce();
     this.loadOrders();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.searchSubject.complete();
   }
 
   /**
-   * Load orders - either initial load or specific page
+   * Configurar funcionalidad de búsqueda con debounce
    */
-  private loadOrders(pageUrl?: string): void {
-    this.orders = this.orderService.getAllOrders$({}, pageUrl).pipe(
+  private setupSearchDebounce(): void {
+    this.searchSubject
+      .pipe(
+        debounceTime(300), // Esperar 300ms después de que el usuario deje de escribir
+        distinctUntilChanged(), // Solo emitir si el valor cambió
+        takeUntil(this.destroy$),
+      )
+      .subscribe((query) => {
+        this.searchQuery.set(query);
+        this.loadOrdersWithFilters();
+      });
+  }
+
+  /**
+   * Manejar cambios en la entrada de búsqueda
+   */
+  onSearchChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchSubject.next(input.value);
+  }
+
+  /**
+   * Limpiar búsqueda y restablecer filtros
+   */
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchSubject.next('');
+  }
+
+  /**
+   * Cargar pedidos con los filtros actuales aplicados
+   */
+  private loadOrdersWithFilters(pageUrl?: string): void {
+    const query = this.searchQuery();
+
+    // Construir parámetros de filtro basados en la consulta de búsqueda
+    const filters = this.parseSearchQuery(query);
+
+    this.orders = this.orderService.getAllOrders$(filters, pageUrl).pipe(
       tap((state) => {
         if (state.data) {
           this.currentOrdersData = state.data;
-          // Store the current page URL based on the response
+          // Almacenar la URL de la página actual basada en la respuesta
           if (pageUrl) {
             this.currentPageUrl = pageUrl;
           } else {
-            // For initial load, we're on the first page
+            // Para carga inicial o carga filtrada, reiniciar a la primera página
             this.currentPageUrl = null;
           }
         }
@@ -92,40 +144,131 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get status severity for PrimeNG badge
+   * Analizar consulta de búsqueda para determinar el tipo de filtro
+   */
+  private parseSearchQuery(query: string): {
+    status?: string;
+    date?: string;
+    order_number?: string;
+    customer_phone?: string;
+  } {
+    if (!query.trim()) {
+      return {};
+    }
+
+    const trimmedQuery = query.trim().toLowerCase();
+
+    // Verificar si la consulta coincide con un estado
+    const statusMatch = this.statusOptions.find(
+      (option) =>
+        option.label.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
+        option.value.toLowerCase() === trimmedQuery.toLowerCase(),
+    );
+    if (statusMatch) {
+      return { status: statusMatch.value };
+    }
+
+    // Verificar si la consulta coincide con una fecha (formato AAAA-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (dateRegex.test(trimmedQuery)) {
+      return { date: trimmedQuery };
+    }
+
+    // Verificar si la consulta coincide con un número de pedido (comienza con ORD-)
+    if (trimmedQuery.startsWith('ord-')) {
+      return { order_number: trimmedQuery };
+    }
+
+    // Verificar si la consulta coincide con un número de teléfono (dígitos, puede incluir +, -, espacios, paréntesis)
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;
+    if (phoneRegex.test(trimmedQuery.replace(/\s/g, ''))) {
+      return { customer_phone: trimmedQuery };
+    }
+
+    // Si no coincide ningún patrón específico, buscar en múltiples campos
+    // El backend manejará la búsqueda en múltiples campos
+    return {
+      order_number: trimmedQuery,
+      customer_phone: trimmedQuery,
+    };
+  }
+
+  /**
+   * Obtener descripción del filtro actual para mostrar
+   */
+  getFilterDescription(): string {
+    const query = this.searchQuery();
+    if (!query.trim()) {
+      return 'Mostrando todos los pedidos';
+    }
+
+    const filters = this.parseSearchQuery(query);
+
+    if (filters.status) {
+      const statusOption = this.statusOptions.find(
+        (opt) => opt.value === filters.status,
+      );
+      return `Filtrado por estado: ${statusOption?.label || filters.status}`;
+    }
+
+    if (filters.date) {
+      return `Filtrado por fecha: ${filters.date}`;
+    }
+
+    if (filters.order_number && !filters.customer_phone) {
+      return `Buscando número de pedido: ${filters.order_number}`;
+    }
+
+    if (filters.customer_phone && !filters.order_number) {
+      return `Buscando teléfono: ${filters.customer_phone}`;
+    }
+
+    return `Buscando: ${query}`;
+  }
+
+  /**
+   * Verificar si actualmente se está filtrando
+   */
+  isFiltering(): boolean {
+    return this.searchQuery().trim().length > 0;
+  }
+
+  /**
+   * Cargar pedidos - ya sea carga inicial o página específica
+   */
+  private loadOrders(pageUrl?: string): void {
+    this.loadOrdersWithFilters(pageUrl);
+  }
+
+  /**
+   * Obtener severidad del estado para la insignia de PrimeNG
    */
   getStatusSeverity(
-    status: string,
+    status: OrderStatus,
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
     switch (status) {
       case 'pending':
         return 'warn';
-      case 'confirmed':
+      case 'assigned':
         return 'info';
-      case 'processing':
+      case 'picked':
         return 'secondary';
-      case 'ready':
-        return 'info';
-      case 'completed':
+      case 'delivered':
         return 'success';
-      case 'cancelled':
-        return 'danger';
       default:
         return 'secondary';
     }
   }
 
   /**
-   * Get status display text
+   * Obtener texto de visualización del estado
    */
-  getStatusDisplay(status: string): string {
+  getStatusDisplay(status: OrderStatus): string {
     const statusMap: { [key: string]: string } = {
-      pending: 'Pending',
-      confirmed: 'Confirmed',
-      processing: 'Processing',
-      ready: 'Ready',
-      completed: 'Completed',
-      cancelled: 'Cancelled',
+      pending: 'Pendiente',
+      assigned: 'Asignado',
+      picked: 'Recogido',
+      delivered: 'Entregado',
     };
 
     return statusMap[status?.toLowerCase()] || status;
@@ -143,23 +286,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         next: (state) => {
           this.updatingOrderId.set(null);
           if (state.data?.success) {
-            // Status updated successfully - refresh current page to get updated data
+            // Estado actualizado exitosamente - refrescar página actual para obtener datos actualizados
             this.refreshOrders();
-            console.log(`Order ${order.id} status updated to ${newStatus}`);
+            console.log(
+              `Estado del pedido ${order.id} actualizado a ${newStatus}`,
+            );
           }
         },
         error: (error) => {
           this.updatingOrderId.set(null);
-          // Revert the status change in the UI if the update failed
-          console.error('Failed to update order status:', error);
-          // Refresh to get the correct data from server
+          console.error('Error al actualizar el estado del pedido:', error);
+          // Refrescar para obtener los datos correctos del servidor
           this.refreshOrders();
         },
       });
   }
 
   /**
-   * Load next or previous page using orderState.data.next/previous URLs
+   * Cargar página siguiente o anterior usando las URLs orderState.data.next/previous
    */
   loadPage(direction: 'next' | 'previous'): void {
     if (!this.currentOrdersData) {
@@ -172,92 +316,92 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         : this.currentOrdersData.previous;
 
     if (targetUrl) {
-      this.loadOrders(targetUrl);
+      this.loadOrdersWithFilters(targetUrl);
     }
   }
 
   /**
-   * Calculate current page based on next/previous URLs and count
+   * Calcular página actual basada en las URLs next/previous y el conteo
    */
   getCurrentPage(): number {
     if (!this.currentOrdersData || !this.currentOrdersData.count) {
       return 1;
     }
 
-    // If we have a next URL, try to extract page number from it
+    // Si tenemos una URL next, intentar extraer el número de página
     if (this.currentOrdersData.next) {
       const pageMatch = this.currentOrdersData.next.match(/[?&]page=(\d+)/);
       if (pageMatch) {
-        // Next page number minus 1 gives current page
+        // Número de página siguiente menos 1 da la página actual
         return parseInt(pageMatch[1], 10) - 1;
       }
     }
 
-    // If we have a previous URL, try to extract page number from it
+    // Si tenemos una URL previous, intentar extraer el número de página
     if (this.currentOrdersData.previous) {
       const pageMatch = this.currentOrdersData.previous.match(/[?&]page=(\d+)/);
       if (pageMatch) {
-        // Previous page number plus 1 gives current page
+        // Número de página anterior más 1 da la página actual
         return parseInt(pageMatch[1], 10) + 1;
       }
     }
 
-    // If no next URL but we have data, we're on the last page
+    // Si no hay URL next pero tenemos datos, estamos en la última página
     if (
       !this.currentOrdersData.next &&
       this.currentOrdersData.results.length > 0
     ) {
-      const pageSize = 25; // Default page size from service
+      const pageSize = 25; // Tamaño de página predeterminado del servicio
       const totalPages = Math.ceil(this.currentOrdersData.count / pageSize);
       return totalPages;
     }
 
-    // Default to page 1
+    // Por defecto, página 1
     return 1;
   }
 
   /**
-   * Get total number of pages
+   * Obtener número total de páginas
    */
   getTotalPages(): number {
     if (!this.currentOrdersData || !this.currentOrdersData.count) {
       return 1;
     }
 
-    const pageSize = 25; // Default page size from service
+    const pageSize = 25; // Tamaño de página predeterminado del servicio
     return Math.ceil(this.currentOrdersData.count / pageSize);
   }
 
   /**
-   * Check if we can load next page
+   * Verificar si se puede cargar la página siguiente
    */
   canLoadNext(): boolean {
     return !!this.currentOrdersData?.next;
   }
 
   /**
-   * Check if we can load previous page
+   * Verificar si se puede cargar la página anterior
    */
   canLoadPrevious(): boolean {
     return !!this.currentOrdersData?.previous;
   }
 
   /**
-   * Refresh orders (reload current page)
+   * Refrescar pedidos (recargar página actual)
    */
   refreshOrders(): void {
-    this.loadOrders(this.currentPageUrl || undefined);
+    this.loadOrdersWithFilters(this.currentPageUrl || undefined);
   }
 
   /**
-   * Handle retry when there's an error
+   * Manejar reintento cuando hay un error
    */
   onRetry(): void {
-    this.loadOrders(this.currentPageUrl || undefined);
+    this.loadOrdersWithFilters(this.currentPageUrl || undefined);
   }
 
   /**
-   * Get page info for display
+   * Obtener información de página para mostrar
    */
   getPageInfo(): string {
     const currentPage = this.getCurrentPage();
@@ -265,31 +409,31 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     const totalOrders = this.currentOrdersData?.count || 0;
 
     if (totalOrders === 0) {
-      return 'No orders';
+      return 'Sin pedidos';
     }
 
-    return `Page ${currentPage} of ${totalPages} (${totalOrders} total orders)`;
+    return `Página ${currentPage} de ${totalPages} (${totalOrders} pedidos en total)`;
   }
 
   /**
-   * Format currency for display
+   * Formatear moneda para mostrar
    */
   formatCurrency(amount: string): string {
-    return parseFloat(amount).toLocaleString('en-US', {
+    return parseFloat(amount).toLocaleString('es-MX', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'MXN',
     });
   }
 
   /**
-   * Format date for display
+   * Formatear fecha para mostrar
    */
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
 
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('es-MX', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -297,33 +441,33 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         minute: '2-digit',
       });
     } catch {
-      return 'Invalid Date';
+      return 'Fecha Inválida';
     }
   }
 
   /**
-   * Get customer name from order
+   * Obtener nombre del cliente desde el pedido
    */
   getCustomerName(order: Order): string {
     return order.customer_info?.name || 'N/A';
   }
 
   /**
-   * Get customer phone from order
+   * Obtener teléfono del cliente desde el pedido
    */
   getCustomerPhone(order: Order): string {
     return order.customer_info?.phone || 'N/A';
   }
 
   /**
-   * Get customer email from order
+   * Obtener email del cliente desde el pedido
    */
   getCustomerEmail(order: Order): string {
     return order.customer_info?.email || 'N/A';
   }
 
   /**
-   * Get address info from order
+   * Obtener información de dirección desde el pedido
    */
   getAddressInfo(order: Order): string {
     const address = order.address_info;
@@ -340,13 +484,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get special instructions from order
+   * Obtener instrucciones especiales desde el pedido
    */
   getSpecialInstructions(order: Order): string {
     return (
       order.order_instructions?.special_instructions ||
       order.address_info?.special_instructions ||
-      'None'
+      'Ninguna'
     );
   }
 }

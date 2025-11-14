@@ -1,1 +1,83 @@
-<app-admin-dashboard></app-admin-dashboard>
+<div class="min-h-screen bg-gray-50">
+  <!-- Top Navigation Bar -->
+  <nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Left side - Brand and Navigation -->
+        <div class="flex items-center space-x-8">
+          <!-- Brand -->
+          <div class="flex-shrink-0">
+            <h1 class="text-xl font-bold text-gray-900">
+              Panel de Administrador
+            </h1>
+          </div>
+
+          <!-- Navigation Links -->
+          <div class="hidden md:flex space-x-4">
+            <a
+              [routerLink]="['/admin']"
+              routerLinkActive="bg-blue-50 text-blue-700 border-blue-500"
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 border-b-2 border-transparent transition-colors duration-200"
+            >
+              Dashboard
+            </a>
+            <a
+              [routerLink]="['/admin/kitchen']"
+              routerLinkActive="bg-blue-50 text-blue-700 border-blue-500"
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 border-b-2 border-transparent transition-colors duration-200"
+            >
+              Cocina
+            </a>
+          </div>
+        </div>
+
+        <!-- Right side - User info and Logout -->
+        <div class="flex items-center space-x-4">
+          <!-- User info (optional - you can get from token if needed) -->
+          <!-- <div class="hidden sm:flex items-center space-x-2"> -->
+          <!--   <div -->
+          <!--     class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center" -->
+          <!--   > -->
+          <!--     <span class="text-white text-sm font-medium">A</span> -->
+          <!--   </div> -->
+          <!--   <span class="text-sm text-gray-700">Administrador</span> -->
+          <!-- </div> -->
+
+          <!-- Logout Button -->
+          <button
+            (click)="logout()"
+            class="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-700 hover:bg-red-50 transition-colors duration-200"
+          >
+            <i class="pi pi-sign-out"></i>
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation -->
+      <div class="md:hidden border-t border-gray-200 pt-4 pb-3">
+        <div class="flex items-center px-2 space-x-4">
+          <a
+            [routerLink]="['/admin']"
+            routerLinkActive="bg-blue-50 text-blue-700"
+            class="flex-1 text-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200"
+          >
+            Dashboard
+          </a>
+          <a
+            [routerLink]="['/admin/kitchen']"
+            routerLinkActive="bg-blue-50 text-blue-700"
+            class="flex-1 text-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200"
+          >
+            Cocina
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <router-outlet></router-outlet>
+  </main>
+</div>

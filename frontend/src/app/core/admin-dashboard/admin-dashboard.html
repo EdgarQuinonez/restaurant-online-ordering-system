@@ -1,9 +1,58 @@
 <div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">Order Management</h1>
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">Gestión de Pedidos</h1>
 
-  <!-- Orders Observable -->
+  <!-- Barra de Búsqueda -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div
+      class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
+    >
+      <div class="flex-1 w-full">
+        <label
+          for="orderSearch"
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Buscar Pedidos
+        </label>
+        <p-iconfield class="w-full">
+          <p-inputicon class="pi pi-search"></p-inputicon>
+          <input
+            id="orderSearch"
+            type="text"
+            pInputText
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+            placeholder="Buscar por estado, fecha (AAAA-MM-DD), número de pedido o teléfono..."
+            class="w-full"
+          />
+          @if (searchQuery()) {
+            <p-inputicon
+              class="pi pi-times cursor-pointer hover:text-gray-700"
+              (click)="clearSearch()"
+            ></p-inputicon>
+          }
+        </p-iconfield>
+        <p class="text-sm text-gray-500 mt-2">
+          {{ getFilterDescription() }}
+        </p>
+      </div>
+
+      <!-- Botón Actualizar -->
+      <div class="">
+        <p-button
+          label="Actualizar"
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="refreshOrders()"
+        >
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Observable de Pedidos -->
   @if (orders | async; as orderState) {
-    <!-- Loading State -->
+    <!-- Estado de Carga -->
     @if (orderState.loading) {
       <div
         class="flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow-sm border border-gray-200"
@@ -15,30 +64,42 @@
           [style]="{ width: '50px', height: '50px' }"
           class="mb-4"
         />
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Loading Orders</h3>
-        <p class="text-gray-600">Please wait while we load the orders...</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          @if (isFiltering()) {
+            Buscando Pedidos...
+          } @else {
+            Cargando Pedidos...
+          }
+        </h3>
+        <p class="text-gray-600">
+          @if (isFiltering()) {
+            Aplicando filtros y buscando...
+          } @else {
+            Por favor espera mientras cargamos los pedidos...
+          }
+        </p>
       </div>
     }
 
-    <!-- Error State -->
+    <!-- Estado de Error -->
     @if (orderState.error && !orderState.loading) {
       <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
         <div class="flex items-start gap-4">
           <i class="pi pi-exclamation-triangle text-2xl text-red-500 mt-1"></i>
           <div class="flex-1">
             <h3 class="text-lg font-semibold text-red-800 mb-2">
-              Error Loading Orders
+              Error al Cargar Pedidos
             </h3>
             <p class="text-red-700 mb-4">
               {{
                 orderState.error.detail ||
                   orderState.error.message ||
                   orderState.error ||
-                  "An unexpected error occurred"
+                  "Ha ocurrido un error inesperado"
               }}
             </p>
             <p-button
-              label="Retry"
+              label="Reintentar"
               icon="pi pi-refresh"
               severity="danger"
               (onClick)="refreshOrders()"
@@ -49,49 +110,76 @@
       </div>
     }
 
-    <!-- Success State with Data -->
+    <!-- Estado Exitoso con Datos -->
     @if (orderState.data && !orderState.loading) {
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <!-- Orders Summary Header -->
+        <!-- Encabezado de Resumen de Pedidos -->
         <div
           class="flex justify-between items-center bg-blue-50 rounded-t-lg p-4 border-b border-blue-100"
         >
           <div>
             <h3 class="text-lg font-semibold text-blue-900">
               {{ orderState.data.count }}
-              {{ orderState.data.count === 1 ? "order" : "orders" }} found
+              {{
+                orderState.data.count === 1
+                  ? "pedido encontrado"
+                  : "pedidos encontrados"
+              }}
+              @if (isFiltering()) {
+                <span class="text-blue-600">(filtrado)</span>
+              }
             </h3>
             <p class="text-blue-700 text-sm">
               {{ getPageInfo() }}
             </p>
           </div>
 
-          <!-- Refresh Button -->
-          <p-button
-            label="Refresh"
-            icon="pi pi-refresh"
-            severity="secondary"
-            [outlined]="true"
-            (onClick)="refreshOrders()"
-          >
-          </p-button>
+          <!-- Estado del Filtro -->
+          @if (isFiltering()) {
+            <p-button
+              label="Limpiar Filtros"
+              icon="pi pi-times"
+              severity="secondary"
+              [text]="true"
+              (onClick)="clearSearch()"
+            >
+            </p-button>
+          }
         </div>
 
-        <!-- Empty State -->
+        <!-- Estado Vacío -->
         @if (orderState.data.count === 0) {
           <div class="text-center py-16">
             <i class="pi pi-inbox text-6xl text-gray-400 mb-6"></i>
             <h3 class="text-2xl font-semibold text-gray-900 mb-3">
-              No Orders Found
+              @if (isFiltering()) {
+                No Hay Pedidos que Coincidan
+              } @else {
+                No Se Encontraron Pedidos
+              }
             </h3>
             <p class="text-gray-600 mb-6 max-w-md mx-auto">
-              There are no orders in the system yet. Orders will appear here
-              once customers start placing them.
+              @if (isFiltering()) {
+                No hay pedidos que coincidan con tus criterios de búsqueda.
+                Intenta ajustar tus filtros o términos de búsqueda.
+              } @else {
+                Aún no hay pedidos en el sistema. Los pedidos aparecerán aquí
+                una vez que los clientes comiencen a realizarlos.
+              }
             </p>
+            @if (isFiltering()) {
+              <p-button
+                label="Limpiar Búsqueda"
+                icon="pi pi-times"
+                severity="secondary"
+                (onClick)="clearSearch()"
+              >
+              </p-button>
+            }
           </div>
         }
 
-        <!-- Orders Table -->
+        <!-- Tabla de Pedidos -->
         @if (orderState.data.count > 0) {
           <div class="overflow-x-auto">
             <p-table
@@ -102,31 +190,31 @@
               <ng-template pTemplate="header">
                 <tr class="bg-gray-50">
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Order #
+                    Pedido #
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Customer
+                    Cliente
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Contact
+                    Contacto
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Address
+                    Dirección
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
                     Total
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Created
+                    Creado
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Status
+                    Estado
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Items
+                    Artículos
                   </th>
                   <th class="text-left p-4 font-semibold text-gray-700">
-                    Instructions
+                    Instrucciones
                   </th>
                 </tr>
               </ng-template>
@@ -135,12 +223,12 @@
                 <tr
                   class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                 >
-                  <!-- Order Number -->
+                  <!-- Número de Pedido -->
                   <td class="p-4 text-gray-900 font-medium">
                     {{ order.order_number || "N/A" }}
                   </td>
 
-                  <!-- Customer Info -->
+                  <!-- Información del Cliente -->
                   <td class="p-4 text-gray-700">
                     <div class="flex flex-col">
                       <span class="font-medium">{{
@@ -152,27 +240,27 @@
                     </div>
                   </td>
 
-                  <!-- Contact Info -->
+                  <!-- Información de Contacto -->
                   <td class="p-4 text-gray-700">
                     {{ getCustomerPhone(order) }}
                   </td>
 
-                  <!-- Address -->
+                  <!-- Dirección -->
                   <td class="p-4 text-gray-700 text-sm max-w-[200px]">
                     {{ getAddressInfo(order) }}
                   </td>
 
-                  <!-- Total Amount -->
+                  <!-- Monto Total -->
                   <td class="p-4 text-gray-900 font-semibold">
                     {{ formatCurrency(order.total_amount) }}
                   </td>
 
-                  <!-- Created Date -->
+                  <!-- Fecha de Creación -->
                   <td class="p-4 text-gray-600 text-sm">
                     {{ formatDate(order.created_at) }}
                   </td>
 
-                  <!-- Status -->
+                  <!-- Estado -->
                   <td class="p-4">
                     <div class="flex items-center gap-2">
                       <p-badge
@@ -199,10 +287,12 @@
                     </div>
                   </td>
 
-                  <!-- Order Items -->
+                  <!-- Artículos del Pedido -->
                   <td class="p-4 text-gray-600 text-sm">
                     <div class="flex flex-col gap-1">
-                      <span>{{ order.order_items?.length || 0 }} items</span>
+                      <span
+                        >{{ order.order_items?.length || 0 }} artículos</span
+                      >
                       @if (order.order_items && order.order_items.length > 0) {
                         <div class="text-xs text-gray-500">
                           @for (
@@ -216,14 +306,14 @@
                             </div>
                           }
                           @if (order.order_items.length > 2) {
-                            <div>+{{ order.order_items.length - 2 }} more</div>
+                            <div>+{{ order.order_items.length - 2 }} más</div>
                           }
                         </div>
                       }
                     </div>
                   </td>
 
-                  <!-- Special Instructions -->
+                  <!-- Instrucciones Especiales -->
                   <td class="p-4 text-gray-600 text-sm max-w-[200px]">
                     {{ getSpecialInstructions(order) }}
                   </td>
@@ -233,23 +323,23 @@
               <ng-template pTemplate="emptymessage">
                 <tr>
                   <td colspan="9" class="text-center p-8 text-gray-500">
-                    No orders found
+                    No se encontraron pedidos
                   </td>
                 </tr>
               </ng-template>
             </p-table>
           </div>
 
-          <!-- Pagination Controls -->
+          <!-- Controles de Paginación -->
           @if (orderState.data.next || orderState.data.previous) {
             <div
               class="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg"
             >
-              <!-- Previous Button -->
+              <!-- Botón Anterior -->
               <div>
                 @if (canLoadPrevious()) {
                   <p-button
-                    label="Previous"
+                    label="Anterior"
                     icon="pi pi-chevron-left"
                     severity="secondary"
                     [outlined]="true"
@@ -260,18 +350,18 @@
                 }
               </div>
 
-              <!-- Page Info -->
+              <!-- Información de Página -->
               <div class="text-center">
                 <span class="text-gray-700 font-medium">{{
                   getPageInfo()
                 }}</span>
               </div>
 
-              <!-- Next Button -->
+              <!-- Botón Siguiente -->
               <div>
                 @if (canLoadNext()) {
                   <p-button
-                    label="Next"
+                    label="Siguiente"
                     icon="pi pi-chevron-right"
                     iconPos="right"
                     severity="secondary"
@@ -288,20 +378,21 @@
       </div>
     }
 
-    <!-- No Data State -->
+    <!-- Estado Sin Datos -->
     @if (!orderState.data && !orderState.loading && !orderState.error) {
       <div
         class="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200"
       >
         <i class="pi pi-inbox text-6xl text-gray-400 mb-6"></i>
         <h3 class="text-2xl font-semibold text-gray-900 mb-3">
-          No Data Available
+          Datos No Disponibles
         </h3>
         <p class="text-gray-600 mb-6">
-          Unable to load order data. Please try again.
+          No se pudieron cargar los datos de pedidos. Por favor, intenta
+          nuevamente.
         </p>
         <p-button
-          label="Try Again"
+          label="Intentar Nuevamente"
           icon="pi pi-refresh"
           (onClick)="refreshOrders()"
           severity="secondary"
@@ -309,5 +400,21 @@
         </p-button>
       </div>
     }
+  }
+
+  <!-- Sin Estado (carga inicial) -->
+  @if (!(orders | async)) {
+    <div
+      class="flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow-sm border border-gray-200"
+    >
+      <p-progress-spinner
+        strokeWidth="8"
+        fill="transparent"
+        animationDuration=".5s"
+        [style]="{ width: '50px', height: '50px' }"
+        class="mb-4"
+      />
+      <p class="text-gray-600">Inicializando...</p>
+    </div>
   }
 </div>

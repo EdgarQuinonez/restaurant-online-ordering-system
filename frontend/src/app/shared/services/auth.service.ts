@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '@environment';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { TokenService } from './token.service';
+import { Router } from '@angular/router';
 
 export interface AuthResponse {
   token: string;
@@ -20,6 +22,8 @@ export interface AuthRequest {
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly tokenService = inject(TokenService);
+  private readonly router = inject(Router);
 
   authenticate(credentials: AuthRequest): Observable<string> {
     return this.http
@@ -33,6 +37,13 @@ export class AuthService {
         }),
         catchError((error) => this.handleAuthError(error)),
       );
+  }
+
+  logout() {
+    // Clear token from token service
+    this.tokenService.clearToken();
+    // Navigate to login page
+    this.router.navigate(['/admin/login']);
   }
 
   private handleAuthError(error: any): Observable<never> {
