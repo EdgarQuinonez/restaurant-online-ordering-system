@@ -5,7 +5,6 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-
 from menu.models import MenuItem, Size
 
 
@@ -61,7 +60,7 @@ class Order(models.Model):
     address_line_2 = models.CharField(max_length=255, blank=True, null=True)
     no_interior = models.CharField(max_length=50, blank=True, null=True)
     no_exterior = models.CharField(max_length=50)
-    address_special_instructions = models.TextField(blank=True)
+    address_special_instructions = models.TextField(blank=True, null=True)
 
     # Order Instructions (from OrderSummaryFormData)
     order_special_instructions = models.TextField(blank=True)

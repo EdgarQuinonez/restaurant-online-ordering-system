@@ -184,11 +184,11 @@
           <div class="overflow-x-auto">
             <p-table
               [value]="orderState.data.results"
-              [tableStyle]="{ 'min-width': '100rem' }"
+              [tableStyle]="{ 'min-width': '100rem', 'min-height': '50rem' }"
               class="w-full"
             >
               <ng-template pTemplate="header">
-                <tr class="bg-gray-50">
+                <tr class="bg-gray-50 max-h-8">
                   <th class="text-left p-4 font-semibold text-gray-700">
                     Pedido #
                   </th>
