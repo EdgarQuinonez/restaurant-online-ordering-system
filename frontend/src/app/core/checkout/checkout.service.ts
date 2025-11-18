@@ -1,16 +1,38 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, delay, throwError } from 'rxjs';
-import { map, catchError, startWith, switchMap, scan } from 'rxjs/operators';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
+import {
+  Observable,
+  of,
+  throwError,
+  BehaviorSubject,
+  shareReplay,
+  tap,
+} from 'rxjs';
+import {
+  map,
+  catchError,
+  startWith,
+  switchMap,
+  scan,
+  take,
+} from 'rxjs/operators';
 import {
   switchMapWithLoading,
   LoadingState,
 } from '@utils/switchMapWithLoading';
-import { OrderData } from './checkout.interface';
-import { OrderResponse } from './checkout.interface';
+import {
+  OrderData,
+  OrderResponse,
+  PaymentIntentResponse,
+} from './checkout.interface';
 import { environment } from '@environment';
 import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
 import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
+import { DeviceIdService } from '@services/device-id.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,21 +40,134 @@ import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
 export class CheckoutService {
   private http = inject(HttpClient);
   private shoppingCartService = inject(ShoppingCartService);
-  private endpoint = `${environment.apiUrl}/orders/`;
+  private deviceIdService = inject(DeviceIdService);
+  private ordersEndpoint = `${environment.apiUrl}/orders/`;
+  private paymentIntentEndpoint = `${environment.apiUrl}/orders/create-payment-intent/`;
 
+  // Store for payment intent to ensure only one is created per session
+  private paymentIntentSubject = new BehaviorSubject<{
+    clientSecret: string | null;
+    paymentIntentId: string | null;
+  }>({ clientSecret: null, paymentIntentId: null });
+
+  private paymentIntent$ = this.paymentIntentSubject
+    .asObservable()
+    .pipe(shareReplay(1));
+
+  /**
+   * Get the current payment intent
+   */
+  public getPaymentIntent$(): Observable<{
+    clientSecret: string | null;
+    paymentIntentId: string | null;
+  }> {
+    return this.paymentIntent$;
+  }
+
+  /**
+   * Set the payment intent in the store
+   */
+  public setPaymentIntent(clientSecret: string, paymentIntentId: string): void {
+    this.paymentIntentSubject.next({ clientSecret, paymentIntentId });
+  }
+
+  /**
+   * Clear the payment intent (e.g., after order completion or cancellation)
+   */
+  public clearPaymentIntent(): void {
+    this.paymentIntentSubject.next({
+      clientSecret: null,
+      paymentIntentId: null,
+    });
+  }
+
+  /**
+   * Create a payment intent when checkout component loads
+   * Uses shareReplay to provide the same payment intent if already created
+   */
+  public createPaymentIntent$(
+    cartItems: CartItem[],
+  ): Observable<PaymentIntentResponse> {
+    // Check if we already have a payment intent
+    const currentIntent = this.paymentIntentSubject.value;
+    if (currentIntent.clientSecret && currentIntent.paymentIntentId) {
+      return of({
+        success: true,
+        payment_intent_id: currentIntent.paymentIntentId,
+        client_secret: currentIntent.clientSecret,
+        amount: 0, // We don't have the amount cached, but it's not critical for the component
+        currency: 'mxn',
+        detail: 'Using existing payment intent',
+      });
+    }
+
+    const deviceId = this.deviceIdService.getDeviceId();
+    const headers = deviceId
+      ? new HttpHeaders({ 'X-Device-ID': deviceId })
+      : undefined;
+    const transformedItems = this.transformCartItems(cartItems);
+
+    return this.http
+      .post<PaymentIntentResponse>(
+        this.paymentIntentEndpoint,
+        { menu_items: transformedItems },
+        { headers },
+      )
+      .pipe(
+        tap((response) => {
+          if (response.success) {
+            // Store the payment intent for future use
+            this.setPaymentIntent(
+              response.client_secret,
+              response.payment_intent_id,
+            );
+          }
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error creating payment intent:', error);
+          return throwError(() => error);
+        }),
+        shareReplay(1), // Ensure multiple subscribers get the same result
+      );
+  }
+
+  /**
+   * Place order with existing payment intent
+   */
   public placeOrder$(
     orderData: OrderData,
+    paymentIntentId: string,
   ): Observable<LoadingState<OrderResponse>> {
     return of(null).pipe(
       switchMapWithLoading(() => {
         // Transform the form data to match backend API format
-        const transformedData = this.transformOrderData(orderData);
-        return this.http.post<OrderResponse>(this.endpoint, transformedData);
+        const transformedData = this.transformOrderData(
+          orderData,
+          paymentIntentId,
+        );
+        const deviceId = this.deviceIdService.getDeviceId();
+        const headers = deviceId
+          ? new HttpHeaders({ 'X-Device-ID': deviceId })
+          : undefined;
+
+        return this.http.post<OrderResponse>(
+          this.ordersEndpoint,
+          transformedData,
+          { headers },
+        );
+      }),
+      tap(() => {
+        // Clear payment intent after successful order placement
+        // This ensures a new payment intent will be created for the next order
+        this.clearPaymentIntent();
       }),
     );
   }
 
-  private transformOrderData(orderData: OrderData): any {
+  private transformOrderData(
+    orderData: OrderData,
+    paymentIntentId: string,
+  ): any {
     const cartItems = this.shoppingCartService.getShoppingCart().items;
 
     return {
@@ -52,13 +187,12 @@ export class CheckoutService {
         special_instructions: orderData.orderSummary.specialInstructions,
       },
       payment_info: {
-        card_number: orderData.payment.cardNumber?.replace(/\s/g, ''), // Remove spaces from card number
         card_holder: orderData.payment.cardHolder,
-        expiry_date: this.transformExpiryDate(orderData.payment.expiryDate), // Transform MM/YY to MM/YYYY
-        cvv: orderData.payment.cvv,
-        transaction_id: this.generateTransactionId(), // You might want to generate this differently
+        expiry_date: this.transformExpiryDate(orderData.payment.expiryDate),
+        transaction_id: this.generateTransactionId(),
       },
       menu_items: this.transformCartItems(cartItems),
+      payment_intent_id: paymentIntentId,
     };
   }
 
@@ -68,7 +202,7 @@ export class CheckoutService {
     // Convert from MM/YY to MM/YYYY
     const [month, year] = expiryDate.split('/');
     if (month && year) {
-      const fullYear = `20${year}`; // Assuming 21st century
+      const fullYear = `20${year}`;
       return `${month}/${fullYear}`;
     }
     return expiryDate;
@@ -83,7 +217,6 @@ export class CheckoutService {
   }
 
   private generateTransactionId(): string {
-    // Generate a simple transaction ID - you might want to use a more robust method
     return `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }

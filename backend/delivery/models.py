@@ -32,9 +32,14 @@ class Customer(models.Model):
 class Order(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
+        ("payment_pending", "Payment Pending"),
+        ("payment_processing", "Payment Processing"),
+        ("payment_failed", "Payment Failed"),
+        ("paid", "Paid"),
         ("assigned", "Assigned"),
         ("picked", "Picked"),
         ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
     ]
 
     # Order Identification
@@ -65,14 +70,40 @@ class Order(models.Model):
     # Order Instructions (from OrderSummaryFormData)
     order_special_instructions = models.TextField(blank=True)
 
-    # Payment Information (from PaymentFormData)
-    card_number = models.CharField(max_length=16)  # Last 4 digits only in practice
-    card_holder = models.CharField(max_length=100)
-    expiry_date = models.CharField(max_length=7)  # Format: MM/YYYY
-    cvv = models.CharField(max_length=4)  # Encrypted in production
+    # Payment Information - Updated for Stripe integration
+    # Store only the last 4 digits of card for reference (optional)
+    card_last_four = models.CharField(max_length=4, blank=True, null=True)
+    card_brand = models.CharField(max_length=50, blank=True, null=True)
+
+    # Stripe Payment Information
+    stripe_payment_intent_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text="Stripe PaymentIntent ID",
+    )
+    stripe_customer_id = models.CharField(
+        max_length=255, blank=True, null=True, help_text="Stripe Customer ID"
+    )
 
     # Transaction Reference
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
+
+    # Payment Status Tracking
+    payment_status = models.CharField(
+        max_length=90,
+        choices=[
+            ("requires_payment_method", "Requires Payment Method"),
+            ("requires_confirmation", "Requires Confirmation"),
+            ("requires_action", "Requires Action"),
+            ("processing", "Processing"),
+            ("requires_capture", "Requires Capture"),
+            ("canceled", "Canceled"),
+            ("succeeded", "Succeeded"),
+        ],
+        default="requires_payment_method",
+    )
 
     # Order Items - Updated to use proper relational fields
     items = models.ManyToManyField(
@@ -83,15 +114,26 @@ class Order(models.Model):
     )
 
     # Order Status & Tracking
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     scheduled_time = models.DateTimeField(null=True, blank=True)
     total_amount = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
     )
 
+    # Payment amount in cents for Stripe (stored as integer)
+    total_amount_cents = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Total amount in cents for Stripe processing",
+    )
+
+    # Currency (default to MXN as specified)
+    currency = models.CharField(max_length=3, default="MXN")
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.order_number
@@ -136,6 +178,49 @@ class Order(models.Model):
         """Calculate total amount from all order items"""
         return sum(item.price * item.quantity for item in self.order_items.all())
 
+    def calculate_total_amount_cents(self):
+        """Calculate total amount in cents for Stripe"""
+        total = self.calculate_total_amount()
+        return int(total * 100)  # Convert to cents
+
+    def update_payment_status(self, status, payment_intent_id=None):
+        """
+        Update payment status and related fields
+        """
+        self.payment_status = status
+
+        if payment_intent_id:
+            self.stripe_payment_intent_id = payment_intent_id
+
+        if status == "succeeded":
+            self.status = "paid"
+            self.paid_at = datetime.now()
+
+        self.save()
+
+    def mark_as_paid(self):
+        """Mark order as paid successfully"""
+        self.status = "paid"
+        self.payment_status = "succeeded"
+        self.paid_at = datetime.now()
+        self.save()
+
+    def mark_payment_failed(self):
+        """Mark order payment as failed"""
+        self.status = "payment_failed"
+        self.payment_status = "canceled"
+        self.save()
+
+    @property
+    def is_paid(self):
+        """Check if order has been paid"""
+        return self.status == "paid" and self.payment_status == "succeeded"
+
+    @property
+    def can_be_processed(self):
+        """Check if order can be processed (paid and valid)"""
+        return self.is_paid and self.status not in ["cancelled", "delivered"]
+
     @classmethod
     def create_order_with_customer(cls, order_data, menu_items_data, device_id=None):
         """
@@ -166,12 +251,24 @@ class Order(models.Model):
 
         # Recalculate and update total amount
         order.total_amount = order.calculate_total_amount()
+        order.total_amount_cents = order.calculate_total_amount_cents()
         order.save()
 
         return order, customer.device_id
 
+    def save(self, *args, **kwargs):
+        """Override save to ensure total_amount_cents is always updated"""
+        if self.total_amount and not self.total_amount_cents:
+            self.total_amount_cents = self.calculate_total_amount_cents()
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["stripe_payment_intent_id"]),
+            models.Index(fields=["status", "payment_status"]),
+            models.Index(fields=["customer", "created_at"]),
+        ]
 
 
 class OrderItem(models.Model):
@@ -209,6 +306,11 @@ class OrderItem(models.Model):
     def subtotal(self):
         return self.price * self.quantity
 
+    @property
+    def subtotal_cents(self):
+        """Subtotal in cents for Stripe"""
+        return int(self.subtotal * 100)
+
 
 @receiver(pre_save, sender=Order)
 def generate_order_number(sender, instance, **kwargs):
@@ -220,6 +322,10 @@ def generate_order_number(sender, instance, **kwargs):
         date_part = datetime.now().strftime("%Y%m%d")
         unique_part = str(uuid.uuid4())[:8].upper()
         instance.order_number = f"ORD-{date_part}-{unique_part}"
+
+    # Ensure total_amount_cents is calculated if not set
+    if instance.total_amount and not instance.total_amount_cents:
+        instance.total_amount_cents = instance.calculate_total_amount_cents()
 
 
 @receiver(pre_save, sender=Customer)

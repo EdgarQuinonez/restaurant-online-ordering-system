@@ -16,7 +16,7 @@ def create_payment_intent(request):
     try:
         data = json.loads(request.body)
         amount = data.get("amount")  # Amount in cents
-        currency = data.get("currency", "usd")
+        currency = data.get("currency", "mxn")
 
         # Get or create Stripe customer
         customer, created = StripeCustomer.objects.get_or_create(

@@ -33,6 +33,14 @@ export interface PaymentFormData {
   expiryDate: string;
   cvv: string;
 }
+export interface PaymentIntentResponse {
+  success: boolean;
+  payment_intent_id: string;
+  client_secret: string;
+  amount: number;
+  currency: string;
+  detail?: string;
+}
 
 // Request Body to /delivery/orders/
 export interface OrderRequestBody {

@@ -86,32 +86,32 @@
       </div>
 
       <!-- Customer Email -->
-      <div class="w-full">
-        <p-iftalabel class="block">
-          <input
-            pInputText
-            id="customerEmail"
-            formControlName="customerEmail"
-            placeholder="Ingresa tu correo electrónico (opcional)"
-            [invalid]="
-              deliveryInfoForm().get('customerEmail')?.touched &&
-              deliveryInfoForm().get('customerEmail')?.invalid
-            "
-            class="w-full"
-          />
-          <label for="customerEmail" class="text-surface-700"
-            >Correo Electrónico</label
-          >
-        </p-iftalabel>
-        @if (
-          deliveryInfoForm().get("customerEmail")?.touched &&
-          deliveryInfoForm().get("customerEmail")?.hasError("email")
-        ) {
-          <span class="text-sm text-invalid mt-1 block"
-            >Por favor ingresa un correo electrónico válido</span
-          >
-        }
-      </div>
+      <!-- <div class="w-full"> -->
+      <!--   <p-iftalabel class="block"> -->
+      <!--     <input -->
+      <!--       pInputText -->
+      <!--       id="customerEmail" -->
+      <!--       formControlName="customerEmail" -->
+      <!--       placeholder="Ingresa tu correo electrónico (opcional)" -->
+      <!--       [invalid]=" -->
+      <!--         deliveryInfoForm().get('customerEmail')?.touched && -->
+      <!--         deliveryInfoForm().get('customerEmail')?.invalid -->
+      <!--       " -->
+      <!--       class="w-full" -->
+      <!--     /> -->
+      <!--     <label for="customerEmail" class="text-surface-700" -->
+      <!--       >Correo Electrónico</label -->
+      <!--     > -->
+      <!--   </p-iftalabel> -->
+      <!--   @if ( -->
+      <!--     deliveryInfoForm().get("customerEmail")?.touched && -->
+      <!--     deliveryInfoForm().get("customerEmail")?.hasError("email") -->
+      <!--   ) { -->
+      <!--     <span class="text-sm text-invalid mt-1 block" -->
+      <!--       >Por favor ingresa un correo electrónico válido</span -->
+      <!--     > -->
+      <!--   } -->
+      <!-- </div> -->
     </div>
   </section>
 

@@ -1,4 +1,11 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  inject,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -8,8 +15,8 @@ import {
 } from '@angular/forms';
 import { CurrencyPipe, JsonPipe, NgClass, AsyncPipe } from '@angular/common';
 
-import { Observable, switchMap, tap } from 'rxjs';
-import { OrderResponse } from './checkout.interface';
+import { Observable, switchMap, tap, Subscription } from 'rxjs';
+import { OrderResponse, PaymentIntentResponse } from './checkout.interface';
 import { LoadingState } from '@utils/switchMapWithLoading';
 // PrimeNG imports
 import { StepperModule } from 'primeng/stepper';
@@ -24,6 +31,7 @@ import { Payment } from './payment/payment';
 import { FinalReview } from './final-review/final-review';
 import { Router } from '@angular/router';
 import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
+import { CartItem } from '@core/shopping-cart/shopping-cart.interface';
 
 @Component({
   selector: 'app-checkout',
@@ -41,7 +49,7 @@ import { ShoppingCartService } from '@core/shopping-cart/shopping-cart.service';
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
 })
-export class Checkout {
+export class Checkout implements OnInit, OnDestroy {
   // Master form group
   orderForm!: FormGroup;
   // Form groups for each step
@@ -63,11 +71,18 @@ export class Checkout {
     'finalReview',
   ];
 
+  // Payment intent state
+  paymentIntentId: string | null = null;
+  clientSecret: string | null = null;
+  paymentIntentLoading = false;
+  paymentIntentError: string | null = null;
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private checkoutService = inject(CheckoutService);
   private shoppingCartService = inject(ShoppingCartService);
   private deviceIdService = inject(DeviceIdService);
+  private subscription = new Subscription();
 
   ngOnInit(): void {
     // Initialize forms
@@ -76,13 +91,37 @@ export class Checkout {
     this.paymentForm = this.createPaymentForm();
 
     // Create master form
-
-    // This exists as the final validation should be performed on every step to allow submit to backend
     this.orderForm = new FormGroup({
       deliveryInfo: this.deliveryInfoForm,
       orderSummary: this.orderSummaryForm,
       payment: this.paymentForm,
     });
+
+    // Check for existing payment intent first
+    this.checkExistingPaymentIntent();
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  private checkExistingPaymentIntent(): void {
+    const paymentIntentSub = this.checkoutService
+      .getPaymentIntent$()
+      .subscribe({
+        next: (paymentIntent) => {
+          if (paymentIntent.clientSecret && paymentIntent.paymentIntentId) {
+            this.clientSecret = paymentIntent.clientSecret;
+            this.paymentIntentId = paymentIntent.paymentIntentId;
+            console.log('Using existing payment intent:', this.paymentIntentId);
+          } else {
+            // Create new payment intent if none exists
+            this.createPaymentIntent();
+          }
+        },
+      });
+
+    this.subscription.add(paymentIntentSub);
   }
 
   // Form creation methods
@@ -114,42 +153,83 @@ export class Checkout {
   }
 
   private createPaymentForm(): FormGroup {
+    // Simplified payment form since Stripe handles payment details
     return new FormGroup({
-      cardNumber: new FormControl('', [
-        Validators.required,
-        Validators.pattern(/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/), // Matches the masked format: 1234 5678 9012 3456
-      ]),
       cardHolder: new FormControl('', [
         Validators.required,
         Validators.minLength(2),
         Validators.maxLength(50),
-        Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/), // Only letters and spaces
-      ]),
-      expiryDate: new FormControl('', [
-        Validators.required,
-        Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/), // MM/YY format
-      ]),
-      cvv: new FormControl('', [
-        Validators.required,
-        Validators.pattern(/^\d{3,4}$/), // 3 or 4 digits
+        Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/),
       ]),
     });
   }
 
+  // Payment intent creation
+  private createPaymentIntent(): void {
+    const cartItems = this.shoppingCartService.getShoppingCart().items;
+
+    if (cartItems.length === 0) {
+      this.paymentIntentError = 'Cart is empty. Please add items to your cart.';
+      return;
+    }
+
+    this.paymentIntentLoading = true;
+    this.paymentIntentError = null;
+
+    const paymentIntentSub = this.checkoutService
+      .createPaymentIntent$(cartItems)
+      .subscribe({
+        next: (response) => {
+          this.paymentIntentLoading = false;
+          if (response.success) {
+            this.paymentIntentId = response.payment_intent_id;
+            this.clientSecret = response.client_secret;
+            console.log('Payment intent created:', this.paymentIntentId);
+
+            // The service automatically stores the payment intent
+            // No need to call setPaymentIntent manually
+          } else {
+            this.paymentIntentError =
+              response.detail || 'Failed to create payment intent';
+          }
+        },
+        error: (error) => {
+          this.paymentIntentLoading = false;
+          this.paymentIntentError =
+            'Failed to create payment intent. Please try again.';
+          console.error('Error creating payment intent:', error);
+        },
+      });
+
+    this.subscription.add(paymentIntentSub);
+  }
+
+  // Retry payment intent creation
+  retryPaymentIntent(): void {
+    this.createPaymentIntent();
+  }
+
   // Navigation helper methods
   canNavigateToStep(stepIndex: number): boolean {
-    // Allow navigation to current step or any completed step
     if (stepIndex <= this.currentStepIndex()) {
       return true;
     }
 
-    // For future steps, check if all previous steps are valid
     for (let i = 0; i < stepIndex; i++) {
       if (!this.isStepValid(this.steps[i])) {
         return false;
       }
     }
     return true;
+  }
+
+  // Check if payment step can be accessed
+  canAccessPaymentStep(): boolean {
+    return (
+      this.isStepValid('deliveryInfo') &&
+      this.isStepValid('orderSummary') &&
+      !!this.clientSecret
+    );
   }
 
   // Form validation methods
@@ -160,7 +240,9 @@ export class Checkout {
       case 'orderSummary':
         return this.orderSummaryForm?.valid ?? false;
       case 'payment':
-        return this.paymentForm?.valid ?? false;
+        // For payment step, we only validate the card holder name
+        // Stripe handles the actual payment validation
+        return this.paymentForm?.valid ?? (false && !!this.clientSecret);
       case 'finalReview':
         return true;
       default:
@@ -183,30 +265,34 @@ export class Checkout {
 
   onPaymentComplete(paymentData: any): void {
     // console.log('Payment completed:', paymentData);
-    // You can process the payment data here if needed
   }
 
   // Order submission
   submitOrder(): void {
-    if (this.orderForm.valid) {
+    if (this.orderForm.valid && this.paymentIntentId) {
       const orderData = this.orderForm.value;
 
-      this.orderResult$ = this.checkoutService.placeOrder$(orderData).pipe(
-        tap((response: any) => {
-          console.log(response);
-          if (response.data) {
-            this.shoppingCartService.clearCart();
+      this.orderResult$ = this.checkoutService
+        .placeOrder$(orderData, this.paymentIntentId)
+        .pipe(
+          tap((response: any) => {
+            console.log(response);
+            if (response.data) {
+              this.shoppingCartService.clearCart();
 
-            if (response.data.device_id) {
-              this.deviceIdService.setDeviceId(response.data.device_id);
-              console.log('New device ID stored:', response.data.device_id);
+              if (response.data.device_id) {
+                this.deviceIdService.setDeviceId(response.data.device_id);
+                console.log('New device ID stored:', response.data.device_id);
+              }
             }
-          }
-        }),
-      );
+          }),
+        );
 
-      // Reset forms or navigate to confirmation page
       this.resetForms();
+    } else {
+      console.error(
+        'Cannot submit order: Form invalid or missing payment intent',
+      );
     }
   }
 
@@ -222,7 +308,9 @@ export class Checkout {
     return (
       this.deliveryInfoForm?.valid &&
       this.orderSummaryForm?.valid &&
-      this.paymentForm?.valid
+      this.paymentForm?.valid &&
+      !!this.paymentIntentId &&
+      !!this.clientSecret
     );
   }
 
@@ -231,6 +319,8 @@ export class Checkout {
     this.orderSummaryForm.reset();
     this.paymentForm.reset();
     this.currentStepIndex.set(0);
+    // Don't clear payment intent here - let the service handle it after order completion
+    this.paymentIntentError = null;
   }
 
   // Getters for template convenience
@@ -249,7 +339,11 @@ export class Checkout {
   get orderFormData() {
     return this.orderForm.value;
   }
-  // Add this method to your Checkout component class
+
+  get cartItems(): CartItem[] {
+    return this.shoppingCartService.getShoppingCart().items;
+  }
+
   getErrorMessages(errors: any): string[] {
     const messages: string[] = [];
 

@@ -1,93 +1,86 @@
 <div class="payment-container">
   <h2 class="text-xl font-semibold text-gray-900 mb-6">Información de Pago</h2>
 
-  <form [formGroup]="paymentForm()" class="space-y-6">
-    <!-- Card Number -->
-    <div class="flex flex-col gap-2">
-      <label for="cardNumber" class="block text-sm font-medium text-gray-700">
-        Número de Tarjeta
-      </label>
-      <p-inputMask
-        id="cardNumber"
-        formControlName="cardNumber"
-        mask="9999 9999 9999 9999"
-        placeholder="1234 5678 9012 3456"
-        [invalid]="isFieldInvalid('cardNumber')"
-        class="w-full"
-      />
-      @if (isFieldInvalid("cardNumber")) {
-        <p-message severity="error" size="small" variant="simple">
-          {{ getFieldError("cardNumber") }}
-        </p-message>
-      }
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container text-center py-8">
+      <p-progressSpinner
+        styleClass="w-8 h-8"
+        strokeWidth="4"
+      ></p-progressSpinner>
+      <p class="text-gray-600 mt-4">Configurando método de pago seguro...</p>
     </div>
+  }
 
-    <!-- Card Holder Name -->
-    <div class="flex flex-col gap-2">
-      <label for="cardHolder" class="block text-sm font-medium text-gray-700">
-        Nombre del Titular
-      </label>
-      <input
-        id="cardHolder"
-        type="text"
-        pInputText
-        formControlName="cardHolder"
-        placeholder="JUAN PEREZ GARCIA"
-        [invalid]="isFieldInvalid('cardHolder')"
-        class="w-full"
-      />
-      @if (isFieldInvalid("cardHolder")) {
-        <p-message severity="error" size="small" variant="simple">
-          {{ getFieldError("cardHolder") }}
-        </p-message>
-      }
+  <!-- Error State -->
+  @if (error() && !loading()) {
+    <div class="error-container mb-6">
+      <p-message severity="error" [closable]="false" class="w-full">
+        {{ error() }}
+      </p-message>
+      <div class="flex justify-center mt-4">
+        <button
+          pButton
+          label="Reintentar"
+          (click)="retryInitialization()"
+          class="p-button-outlined p-button-secondary"
+          icon="pi pi-refresh"
+        ></button>
+      </div>
     </div>
+  }
 
-    <!-- Expiry Date and CVV -->
-    <div class="grid grid-cols-2 gap-4">
-      <!-- Expiry Date -->
+  <!-- Payment Form -->
+  @if (!loading() && !error()) {
+    <form [formGroup]="paymentForm()" class="space-y-6">
+      <!-- Card Holder Name -->
       <div class="flex flex-col gap-2">
-        <label for="expiryDate" class="block text-sm font-medium text-gray-700">
-          Fecha de Expiración
+        <label for="cardHolder" class="block text-sm font-medium text-gray-700">
+          Nombre del Titular *
         </label>
-        <p-inputMask
-          id="expiryDate"
-          formControlName="expiryDate"
-          mask="99/99"
-          placeholder="MM/AA"
-          [invalid]="isFieldInvalid('expiryDate')"
+        <input
+          id="cardHolder"
+          type="text"
+          pInputText
+          formControlName="cardHolder"
+          placeholder="JUAN PEREZ GARCIA"
           class="w-full"
-          fluid
         />
-        @if (isFieldInvalid("expiryDate")) {
+        @if (isFieldInvalid("cardHolder")) {
           <p-message severity="error" size="small" variant="simple">
-            {{ getFieldError("expiryDate") }}
+            {{ getFieldError("cardHolder") }}
           </p-message>
         }
       </div>
 
-      <!-- CVV -->
+      <!-- Stripe Payment Element -->
       <div class="flex flex-col gap-2">
-        <label for="cvv" class="block text-sm font-medium text-gray-700">
-          CVV
+        <label class="block text-sm font-medium text-gray-700">
+          Detalles de Pago *
         </label>
-        <p-inputMask
-          id="cvv"
-          formControlName="cvv"
-          mask="999"
-          placeholder="123"
-          [invalid]="isFieldInvalid('cvv')"
-          class="w-full"
-          fluid
-        />
-        @if (isFieldInvalid("cvv")) {
+        <div #paymentElement class="stripe-payment-element w-full">
+          <!-- Stripe Payment Element will be mounted here -->
+        </div>
+        @if (hasError()) {
           <p-message severity="error" size="small" variant="simple">
-            {{ getFieldError("cvv") }}
+            {{ getErrorMessage() }}
           </p-message>
         }
+        <small class="text-gray-500 text-xs mt-1">
+          Los detalles de tu tarjeta se procesan de forma segura a través de
+          Stripe. Aceptamos tarjetas de crédito y débito principales.
+        </small>
       </div>
-    </div>
-  </form>
+
+      <!-- Security Badge -->
+      <div
+        class="security-badge flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <i class="pi pi-shield text-green-500"></i>
+        <span class="text-sm text-gray-600">Pago 100% seguro y encriptado</span>
+      </div>
+    </form>
+  }
 
   <!-- Navigation Buttons -->
   <div class="flex pt-6 justify-between">
@@ -96,13 +89,16 @@
       label="Atrás"
       severity="secondary"
       icon="pi pi-arrow-left"
+      [disabled]="loading()"
     />
     <p-button
       label="Realizar Pago"
       (onClick)="onContinue()"
-      [disabled]="!formValid()"
+      [disabled]="!formValid() || loading()"
+      [loading]="loading()"
       icon="pi pi-lock"
-      [class]="!formValid() ? 'opacity-50 cursor-not-allowed' : ''"
+      iconPos="right"
+      [class]="!formValid() || loading() ? 'opacity-50 cursor-not-allowed' : ''"
     />
   </div>
 </div>
