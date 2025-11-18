@@ -12,7 +12,7 @@ import { AdminKitchen } from '@core/admin-kitchen/admin-kitchen';
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'menu',
     component: MenuPage,
     title: 'Café Parralito | Menú',
   },
