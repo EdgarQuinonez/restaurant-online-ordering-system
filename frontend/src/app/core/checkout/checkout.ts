@@ -211,7 +211,7 @@ export class Checkout {
   }
 
   navigateHome(): void {
-    this.router.navigateByUrl('/');
+    this.router.navigateByUrl('/menu');
   }
 
   retryOrder(): void {
