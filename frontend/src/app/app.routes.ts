@@ -12,7 +12,6 @@ import { authGuard } from '@guards/auth-guard';
 import { AdminDashboardComponent } from '@core/admin-dashboard/admin-dashboard';
 import { AdminKitchen } from '@core/admin-kitchen/admin-kitchen';
 
-
 import { HomeComponent } from '@pages/home/home.component';
 import { AboutComponent } from '@pages/about/about.component';
 import { ContactComponent } from '@pages/contact/contact.component';
@@ -26,26 +25,25 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 
-
   {
     path: 'home',
     component: HomeComponent,
-    title: 'Café Parralito | Inicio'
+    title: 'Café Parralito | Inicio',
   },
   {
     path: 'about',
     component: AboutComponent,
-    title: 'Café Parralito | Acerca de Nosotros'
+    title: 'Café Parralito | Acerca de Nosotros',
   },
   {
     path: 'contact',
     component: ContactComponent,
-    title: 'Café Parralito | Contáctanos'
+    title: 'Café Parralito | Contáctanos',
   },
   {
     path: 'ubication',
     component: UbicationComponent,
-    title: 'Café Parralito | Ubicación'
+    title: 'Café Parralito | Ubicación',
   },
 
   // Rutas del menú
@@ -55,7 +53,7 @@ export const routes: Routes = [
     title: 'Café Parralito | Menú',
   },
   {
-    path: 'checkout',
+    path: 'menu/checkout',
     component: CheckoutPage,
     title: 'Completar Pedido',
   },
@@ -90,8 +88,8 @@ export const routes: Routes = [
   },
 
   // Página no encontrada → Redirige al home
-  {
-    path: '**',
-    redirectTo: 'home',
-  }
+  // {
+  //   path: '**',
+  //   redirectTo: 'home',
+  // }
 ];
