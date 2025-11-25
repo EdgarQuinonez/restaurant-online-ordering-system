@@ -17,7 +17,7 @@ export const routes: Routes = [
     title: 'Café Parralito | Menú',
   },
   {
-    path: 'checkout',
+    path: 'menu/checkout',
     component: CheckoutPage,
     title: 'Completar Pedido',
   },
