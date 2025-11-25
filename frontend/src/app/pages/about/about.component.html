@@ -1,0 +1,118 @@
+<header class="bg-white shadow-md relative border-b-4 border-[#f8f0e7]">
+  <nav class="container mx-auto px-4 flex justify-between items-center h-24 relative z-20">
+    
+    <!-- Botón Menú -->
+    <button (click)="toggleMenu()" class="text-gray-800 focus:outline-none" aria-label="Toggle navigation">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 6h16M4 12h16m-4 6h-8"></path>
+      </svg>
+    </button>
+    
+    <!-- Logo Centrado -->
+    <div class="flex-grow text-center">
+      <a routerLink="/home">
+        <img src="assets/about/LogoTransparente.png" alt="Logo Café El Parralito" class="h-48 mx-auto">
+      </a>
+    </div>
+
+    <!-- AQUÍ SE ELIMINARON LOS BOTONES "MIS PEDIDOS" Y "TU CARRITO" -->
+
+  </nav>
+
+  <!-- Overlay oscuro -->
+  <div *ngIf="isOpen" (click)="closeMenu()" class="fixed inset-0 z-10 cursor-default"></div>
+
+  <!-- Menú Desplegable -->
+  <div *ngIf="isOpen"
+       [@menuAnimation]
+       class="absolute top-full left-0 w-full bg-white shadow-lg z-20 p-4 font-averia border-t border-gray-100">
+
+    <h5 class="text-xl font-semibold mb-2 text-[#5d4037]">Contenido del Menú</h5>
+
+    <ul class="flex flex-col space-y-1">
+      <!-- AQUÍ SE ELIMINÓ LA OPCIÓN "MIS PEDIDOS" -->
+      <li><a routerLink="/menu" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Ver Menú</a></li>
+      <li><a routerLink="/ubication" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Conocer Ubicación</a></li>
+      <li><a routerLink="/about" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Acerca de Nosotros</a></li>
+      <li><a routerLink="/contact" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Contáctanos</a></li>
+    </ul>
+
+  </div>
+</header>
+
+<main class="flex-grow bg-white">
+  
+  <section class="w-full bg-[#5d4037] py-6">
+    <h1 class="text-white text-3xl text-center font-averia">
+      Conoce Sobre El Parralito
+    </h1>
+  </section>
+
+  <section class="py-16">
+    <div class="container mx-auto px-4">
+
+      <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden md:flex">
+
+        <div class="md:w-1/2">
+          <img class="w-full h-full object-cover"
+               src="assets/about/TazaAcerca.jpg"
+               alt="Taza de café en la mesa de Café El Parralito">
+        </div>
+
+        <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          <h2 class="text-3xl font-semibold text-[#5d4037] mb-6 font-averia">
+            Acerca de El Parralito
+          </h2>
+
+          <p class="text-gray-700 text-xl leading-relaxed mb-4 font-averia">
+            Café El Parralito nace de una idea simple: honrar la calidad artesanal del buen café.
+          </p>
+
+          <p class="text-gray-700 text-xl leading-relaxed mb-4 font-averia">
+            Respeto por el producto y, sobre todo, respeto por Ti. Sabemos que buscas más que solo cafeína; buscas una experiencia.
+          </p>
+
+          <p class="text-gray-700 text-xl leading-relaxed font-averia">
+            Hacemos que cada sorbo sea un momento de pausa y disfrute.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="bg-[#f8f0e7] py-16">
+  <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 px-8">
+
+    <div class="text-center md:text-left">
+      <a routerLink="/home">
+        <img src="assets/about/LogoTransparente.png" alt="Logo Café El Parralito"
+             class="w-[308px] h-auto mb-4 mx-auto md:mx-0">
+      </a>
+
+      <p class="text-xl text-gray-700 leading-relaxed font-averia">
+        Café El Parralito nace de una idea simple: honrar la calidad artesanal del buen café.
+        <a routerLink="/about" class="font-semibold text-[#5d4037] hover:underline">Leer más</a>
+      </p>
+    </div>
+
+    <div class="text-center md:text-left">
+      <h4 class="text-2xl font-semibold text-[#5d4037] mb-4 font-averia">Acerca De</h4>
+      <ul class="space-y-2">
+        <li><a routerLink="/about" class="text-xl text-gray-700 hover:text-[#5d4037] font-averia">Sobre Nosotros</a></li>
+      </ul>
+    </div>
+
+    <div class="text-center md:text-left">
+      <h4 class="text-2xl font-semibold text-[#5d4037] mb-4 font-averia">Atención Al Cliente</h4>
+      <ul class="space-y-2">
+        <li><a routerLink="/contact" class="text-xl text-gray-700 hover:text-[#5d4037] font-averia">Contáctanos</a></li>
+      </ul>
+    </div>
+
+  </div>
+</footer>
