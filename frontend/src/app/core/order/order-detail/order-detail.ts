@@ -40,13 +40,21 @@ import type { Order, OrderItem } from '@core/checkout/checkout.interface';
       <!-- Header with Back Button -->
       <div class="flex items-center justify-between mb-6">
         <p-button
+          class="hidden md:block"
           label="Volver a Pedidos"
           icon="pi pi-arrow-left"
           severity="secondary"
           [outlined]="true"
           [routerLink]="['/order']"
         />
-
+        <p-button
+          class="md:hidden"
+          label=""
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/order']"
+        />
         <div class="text-right">
           <h1 class="text-2xl font-bold text-gray-900">Detalles del Pedido</h1>
           <p class="text-gray-600">Revisa toda la información de tu pedido</p>
@@ -335,7 +343,16 @@ import type { Order, OrderItem } from '@core/checkout/checkout.interface';
                   (onClick)="reload()"
                 />
                 <p-button
+                  class="hidden md:block"
                   label="Volver a Pedidos"
+                  icon="pi pi-arrow-left"
+                  severity="secondary"
+                  [outlined]="true"
+                  [routerLink]="['/order']"
+                />
+                <p-button
+                  class="md:hidden"
+                  label=""
                   icon="pi pi-arrow-left"
                   severity="secondary"
                   [outlined]="true"

@@ -2,7 +2,16 @@
   <!-- Header -->
   <div class="flex justify-between items-center mb-8">
     <p-button
+      class="hidden md:block"
       label="Volver a Menú"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      [outlined]="true"
+      [routerLink]="['/menu']"
+    />
+    <p-button
+      class="md:hidden"
+      label=""
       icon="pi pi-arrow-left"
       severity="secondary"
       [outlined]="true"
@@ -14,7 +23,16 @@
       <p class="text-gray-600">Revisa el estado de tus pedidos recientes</p>
     </div>
     <p-button
+      class="hidden md:block"
       label="Nuevo Pedido"
+      icon="pi pi-plus"
+      [routerLink]="['/menu']"
+      severity="primary"
+    >
+    </p-button>
+    <p-button
+      class="md:hidden"
+      label=""
       icon="pi pi-plus"
       [routerLink]="['/menu']"
       severity="primary"
@@ -138,7 +156,7 @@
                         #{{ order.order_number }}
                       </h3>
                       <p-badge
-                        [value]="order.status_display"
+                        [value]="getStatusDisplay(order.status)"
                         [severity]="getStatusSeverity(order.status)"
                         class="text-sm"
                       >
