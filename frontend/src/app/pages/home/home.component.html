@@ -1,0 +1,137 @@
+<header class="bg-white shadow-md relative border-b-4 border-[#f8f0e7]">
+  <nav class="container mx-auto px-4 flex justify-between items-center h-24 relative z-20">
+    
+    <button (click)="toggleMenu()" class="text-gray-800 focus:outline-none" aria-label="Toggle navigation">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 6h16M4 12h16m-4 6h-8"></path>
+      </svg>
+    </button>
+
+    <div class="flex-grow text-center">
+      <a routerLink="/home">
+        <img src="assets/home/LogoTransparente.png" alt="Logo Café El Parralito" class="h-48 mx-auto">
+      </a>
+    </div>
+
+    </nav>
+
+  <div *ngIf="isOpen" (click)="closeMenu()" class="fixed inset-0 z-10 cursor-default"></div>
+
+  <div *ngIf="isOpen"
+       [@menuAnimation]
+       class="absolute top-full left-0 w-full bg-white shadow-lg z-20 p-4 font-averia">
+
+    <h5 class="text-xl font-semibold mb-2">Contenido del Menú</h5>
+
+    <ul class="flex flex-col space-y-1">
+      <li><a routerLink="/menu" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Ver Menú</a></li>
+      <li><a routerLink="/ubication" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Conocer Ubicacion</a></li>
+      <li><a routerLink="/about" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Acerca de Nosotros</a></li>
+      <li><a routerLink="/contact" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Contactanos</a></li>
+    </ul>
+
+  </div>
+</header>
+
+<main>
+  <section class="w-full h-[600px] bg-cover bg-center flex items-center" 
+           style="background-image: url('assets/home/CafeInicio.jpg');">
+    
+    <div class="container mx-auto">
+      <div class="flex flex-col justify-center p-8 md:p-12 text-left items-start max-w-2xl">
+        <h1 class="text-5xl lg:text-6xl font-averia text-[#5d4037] leading-tight font-medium">
+          La pausa que <br> inspira tu día.
+        </h1>
+        <div class="mt-8 flex justify-start">
+          <a routerLink="/menu" class="px-8 py-3 bg-[#5d4037] text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 transition duration-300">
+            Ver Menú
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white py-16">
+    <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+
+      <a routerLink="/ubication" class="group relative overflow-hidden rounded-lg shadow-lg">
+        <img src="assets/home/CafeRosa.jpg" class="w-full h-96 object-cover transform transition-transform duration-500 group-hover:scale-110">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-6">
+            <h3 class="text-white text-3xl font-averia font-medium">
+              Conocer<br>Ubicacion.
+            </h3>
+        </div>
+      </a>
+
+      <a routerLink="/about" class="group relative overflow-hidden rounded-lg shadow-lg">
+        <img src="assets/home/ChilaquilesRojos.jpg" class="w-full h-96 object-cover transform transition-transform duration-500 group-hover:scale-110">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-6">
+            <h3 class="text-white text-3xl font-averia font-medium">
+              Acerca De<br>Nosotros.
+            </h3>
+        </div>
+      </a>
+
+      <a routerLink="/contact" class="group relative overflow-hidden rounded-lg shadow-lg">
+        <img src="assets/home/HotCakes.jpg" class="w-full h-96 object-cover transform transition-transform duration-500 group-hover:scale-110">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-6">
+            <h3 class="text-white text-3xl font-averia font-medium">
+              Contactanos.
+            </h3>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="w-full h-[400px] bg-cover bg-center relative flex items-center py-16"
+           style="background-image: url('assets/home/TazasAbajo.jpg');">
+    
+    <div class="absolute inset-0 bg-black opacity-40"></div>
+    
+    <div class="container mx-auto relative z-10">
+      <div class="flex flex-col justify-center p-8 md:p-12 text-left text-white">
+        <h2 class="text-4xl lg:text-5xl font-averia leading-tight font-medium mb-4">
+          Haz tu pedido y Ahorra un 10% en <br> tu primera compra.
+        </h2>
+        <p class="text-xl lg:text-2xl font-averia font-light mb-8">
+          Entregas rápidas y <br> sin esperar tanto.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="bg-[#f8f0e7] py-16">
+  <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 px-8">
+    
+    <div class="text-center md:text-left">
+      <a routerLink="/home">
+        <img src="assets/home/LogoTransparente.png" alt="Logo Café El Parralito" class="w-[308px] h-auto mb-4 mx-auto md:mx-0">
+      </a>
+      <p class="text-xl text-gray-700 leading-relaxed font-averia">
+        Café El Parralito nace de una idea simple: honrar la calidad artesanal del buen café. Nuestra historia se basa en el respeto. 
+        <a routerLink="/about" class="font-semibold text-[#5d4037] hover:underline">Leer Mas</a>
+      </p>
+    </div>
+
+    <div class="text-center md:text-left">
+      <h4 class="text-2xl font-semibold font-averia text-[#5d4037] mb-4">Acerca De</h4>
+      <ul class="space-y-2">
+        <li><a routerLink="/about" class="text-xl text-gray-700 hover:text-[#5d4037] transition-colors font-averia">Sobre Nosotros</a></li>
+      </ul>
+    </div>
+
+    <div class="text-center md:text-left">
+      <h4 class="text-2xl font-semibold font-averia text-[#5d4037] mb-4">Atención Al Cliente</h4>
+      <ul class="space-y-2">
+        <li><a routerLink="/contact" class="text-xl text-gray-700 hover:text-[#5d4037] transition-colors font-averia">Contáctanos</a></li>
+      </ul>
+    </div>
+
+  </div>
+</footer>

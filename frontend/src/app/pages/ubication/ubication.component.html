@@ -1,0 +1,116 @@
+<header class="bg-white shadow-md relative border-b-4 border-[#f8f0e7]">
+  <nav class="container mx-auto px-4 flex justify-between items-center h-24 relative z-20">
+    
+    <button (click)="toggleMenu()" class="text-gray-800 focus:outline-none" aria-label="Toggle navigation">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 6h16M4 12h16m-4 6h-8"></path>
+      </svg>
+    </button>
+
+    <div class="flex-grow text-center">
+      <a routerLink="/home">
+        <img src="assets/ubication/LogoTransparente.png" alt="Logo Café El Parralito" class="h-48 mx-auto">
+      </a>
+    </div>
+
+    </nav>
+
+  <div *ngIf="isOpen" (click)="closeMenu()" class="fixed inset-0 z-10 cursor-default"></div>
+
+  <div *ngIf="isOpen"
+       [@menuAnimation]
+       class="absolute top-full left-0 w-full bg-white shadow-lg z-20 p-4 font-averia border-t border-gray-100">
+
+    <h5 class="text-xl font-semibold mb-2 text-[#5d4037]">Contenido del Menú</h5>
+
+    <ul class="flex flex-col space-y-1">
+      <li><a routerLink="/menu" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Ver Menú</a></li>
+      <li><a routerLink="/ubication" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Conocer Ubicacion</a></li>
+      <li><a routerLink="/about" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Acerca de Nosotros</a></li>
+      <li><a routerLink="/contact" (click)="closeMenu()" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Contactanos</a></li>
+    </ul>
+
+  </div>
+</header>
+
+<main class="flex-grow bg-white">
+
+  <section class="w-full bg-[#5d4037] py-6">
+    <h1 class="text-white text-3xl text-center font-averia">
+      Ubicación
+    </h1>
+  </section>
+
+  <section class="py-16">
+    <div class="container mx-auto px-4">
+
+      <div class="max-w-md mx-auto bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+        <div class="p-10 text-center">
+
+          <span class="inline-block bg-[#f8f0e7] rounded-md py-6 px-10">
+            <h2 class="text-lg font-semibold text-gray-900 font-averia">
+              Café El Parralito
+            </h2>
+          </span>
+
+          <h3 class="text-2xl font-semibold text-gray-800 mt-8 mb-6 font-averia">
+            Ubicación Café El Parralito
+          </h3>
+
+          <p class="text-xl text-gray-700 leading-relaxed font-averia">
+            Melchor Ocampo 33, Centro, 33850 Hidalgo Del Parral, Chih.
+          </p>
+
+          <p class="text-xl text-gray-700 mt-4 font-averia">
+            Horario: 10:00 a.m. - 10:00 p.m.
+          </p>
+
+          <div class="mt-10">
+            <a
+              href="https://www.google.com/maps/place/Restaurante+Cafe+el+Parralito/@26.8684953,-105.779605,16329m/data=!3m1!1e3!4m10!1m2!2m1!1scafe+parralito!3m6!1s0x86945100076a824f:0xccdabf58152fe46c!8m2!3d26.9309233!4d-105.6587346!15sCg5jYWZlIHBhcnJhbGl0b5IBEWZhbWlseV9yZXN0YXVyYW50qgFWCgkvbS8wMnZxZm0QASoSIg5jYWZlIHBhcnJhbGl0bygOMh8QASIbvHNfGfCmG2hkhCrotRgtEYq9Wks8AhctjUk4MhIQAiIOY2FmZSBwYXJyYWxpdG_gAQA!16s%2Fg%2F11ygdw618t?entry=ttu&g_ep=EgoyMDI1MTExNy4wIKXMDSoASAFQAw%3D%3D"
+              target="_blank"
+              class="inline-block px-12 py-3 bg-[#f8f0e7] text-gray-900 text-lg font-semibold font-averia rounded-md shadow-md hover:bg-opacity-90 transition duration-300">
+              Dirección
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="bg-[#f8f0e7] py-16">
+  <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 px-8">
+
+    <div class="text-center md:text-left">
+      <a routerLink="/home">
+        <img src="assets/ubication/LogoTransparente.png" alt="Logo Café El Parralito"
+             class="w-[308px] h-auto mb-4 mx-auto md:mx-0">
+      </a>
+
+      <p class="text-xl text-gray-700 leading-relaxed font-averia">
+        Café El Parralito nace de una idea simple: honrar la calidad artesanal del buen café.
+        <a routerLink="/about" class="font-semibold text-[#5d4037] hover:underline">Leer Mas</a>
+      </p>
+    </div>
+
+    <div class="text-center md:text-left">
+      <h4 class="text-2xl font-semibold text-[#5d4037] mb-4 font-averia">Acerca De</h4>
+      <ul class="space-y-2">
+        <li><a routerLink="/about" class="text-xl text-gray-700 hover:text-[#5d4037] font-averia">Sobre Nosotros</a></li>
+      </ul>
+    </div>
+
+    <div class="text-center md:text-left">
+      <h4 class="text-2xl font-semibold text-[#5d4037] mb-4 font-averia">Atención Al Cliente</h4>
+      <ul class="space-y-2">
+        <li><a routerLink="/contact" class="text-xl text-gray-700 hover:text-[#5d4037] font-averia">Contáctanos</a></li>
+      </ul>
+    </div>
+
+  </div>
+</footer>
